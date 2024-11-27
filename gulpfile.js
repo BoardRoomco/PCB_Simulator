@@ -10,6 +10,7 @@ var connect = require('gulp-connect');
 var uglify = require('gulp-uglify');
 var envify = require('envify/custom');
 var file = require('gulp-file');
+var path = require('path');
 
 var buildDir = 'build';
 var devBuildDir = 'dev_build';
@@ -23,7 +24,8 @@ function templates(outDir) {
   return function() {
     return gulp.src('public/*.jade')
       .pipe(jade())
-      .pipe(gulp.dest(outDir));
+      .pipe(gulp.dest(outDir))
+      .pipe(connect.reload());
   };
 }
 
@@ -58,7 +60,10 @@ gulp.task('icons', icons(devBuildDir));
 function compile(opts) {
   var bundler = watchify(
     browserify('./public/main.js', { debug: true })
-      .transform(babel)
+      .transform(babel.configure({
+        presets: ['es2015', 'react', 'stage-2'],
+        plugins: []
+      }))
       .transform(envify({
         NODE_ENV: 'development'
       }), {global: true})
@@ -66,59 +71,92 @@ function compile(opts) {
 
   function rebundle() {
     return bundler.bundle()
-      .on('error', handleError)
+      .on('error', function(err) {
+        console.error(err.toString());
+        this.emit('end');
+      })
       .pipe(source('main.js'))
       .pipe(buffer())
       .pipe(sourcemaps.init({ loadMaps: true }))
       .pipe(sourcemaps.write('./'))
       .pipe(gulp.dest(devBuildDir))
-      .pipe(connect.reload());
+      .on('end', function() {
+        connect.reload();
+      });
   }
 
   if (opts.watch) {
     bundler.on('update', function() {
-      console.log('-> bundling...'); // eslint-disable-line no-console
-      return rebundle();
+      console.log('-> bundling...');
+      rebundle();
     });
   }
 
   return rebundle();
 }
 
-gulp.task('connect', function() {
-  return connect.server({
+gulp.task('connect', function(done) {
+  connect.server({
     root: devBuildDir,
-    livereload: true
+    livereload: true,
+    fallback: path.join(devBuildDir, 'index.html'),
+    port: 3000,
+    middleware: function(connect, opt) {
+      return [
+        function(req, res, next) {
+          res.setHeader('Access-Control-Allow-Origin', '*');
+          next();
+        }
+      ];
+    }
   });
+  done();
 });
 
-gulp.task('watch', function() {
-  gulp.watch('public/*.css', ['styles']);
-  return compile({watch: true});
+
+gulp.task('watch', function(done) {
+  gulp.watch('public/*.jade', gulp.series('templates'));
+  gulp.watch('public/*.css', gulp.series('styles'));
+  gulp.watch('public/vendor/**', gulp.series('vendor'));
+  gulp.watch('public/icons/**', gulp.series('icons'));
+  
+  compile({watch: true});
+  done();
 });
 
-gulp.task('build', function() {
+gulp.task('build', gulp.series(function(done) {
   templates(buildDir)();
   styles(buildDir)();
   vendor(buildDir)();
   icons(buildDir)();
+  
   file('CNAME', 'circuits.im', { src: true })
     .pipe(gulp.dest(buildDir));
-  return browserify('./public/main.js')
+    
+  browserify('./public/main.js')
     .transform(envify({
       NODE_ENV: 'production'
     }), {global: true})
     .transform(babel.configure({
+      presets: ['es2015', 'react', 'stage-2'],
       optional: [
         'optimisation.react.constantElements',
         'optimisation.react.inlineElements'
       ]
     }))
-    .bundle().on('error', handleError)
+    .bundle()
+    .on('error', handleError)
     .pipe(source('main.js'))
     .pipe(buffer())
     .pipe(uglify())
     .pipe(gulp.dest(buildDir));
-});
+    
+  done();
+}));
 
-gulp.task('default', ['templates', 'vendor', 'styles', 'icons', 'connect', 'watch']);
+gulp.task('default', gulp.series(
+  gulp.parallel('templates', 'styles', 'vendor', 'icons'),
+  'connect',
+  'watch'
+));
+
