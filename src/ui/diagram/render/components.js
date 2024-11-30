@@ -15,6 +15,7 @@ export default function({ctx, theme, volts2RGB, circuitState, components}) {
 
     const props = {
       ...component,
+      voltages,
       colors
     };
 

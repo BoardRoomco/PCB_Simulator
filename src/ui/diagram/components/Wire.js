@@ -26,9 +26,22 @@ export default {
   render: (ctx, props) => {
     const {
       tConnectors,
-      colors
+      colors,
+      voltages
     } = props;
 
+    console.log('tConnectors:', tConnectors);
+    console.log('colors:', colors);
+    console.log('voltages:', voltages);
+  
+    if (!tConnectors || !voltages || !colors) {
+      console.error('Missing required props for render');
+      return;  // Early return if props are missing
+    }
+
+    // Format voltages to two decimal places
+  const formattedVoltages = voltages.map(voltage => voltage.toFixed(2));
+  
     ctx.strokeStyle = colors[0];
 
     const [c1, c2] = tConnectors;
@@ -36,6 +49,12 @@ export default {
     ctx.moveTo(c1.x, 0);
     ctx.lineTo(c2.x, 0);
     ctx.stroke();
+
+    ctx.fillStyle = 'black';  // Set color for the text (can be customized)
+    ctx.font = '12px Arial';  // Set font for the text
+    
+    ctx.fillText(`${formattedVoltages[0]} V`, c1.x, 15);
+    ctx.fillText(`${formattedVoltages[1]} V`, c2.x, 15);
   },
 
   getCurrents: (props, state) => {
