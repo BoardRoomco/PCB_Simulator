@@ -13,9 +13,12 @@ const BOUNDING_BOX_WIDTH = RESISTOR.WIDTH + BOUNDING_BOX_PADDING * 2;
 const MIN_LENGTH = RESISTOR.LENGTH + GRID_SIZE;
 
 const BaseResistorModel = BaseData.Resistor;
-
 const DEFAULT_RESISTANCE = 1e3;
 const NUM_OF_CONNECTORS = 2;
+
+const resistorImage = new Image();
+resistorImage.src = '/icons/resistor.png';
+
 export default {
   typeID: BaseResistorModel.typeID,
 
@@ -62,11 +65,17 @@ export default {
     ctx.lineTo(RESISTOR.LENGTH / 2, 0);
     ctx.stroke();
 
-    const gradient = ctx.createLinearGradient(-RESISTOR.LENGTH / 2, 0, RESISTOR.LENGTH / 2, 0);
-    gradient.addColorStop(0, colors[0]);
-    gradient.addColorStop(1, colors[1]);
-    ctx.strokeStyle = gradient;
-    ctx.strokeRect(-RESISTOR.LENGTH / 2, -RESISTOR.WIDTH / 2, RESISTOR.LENGTH, RESISTOR.WIDTH);
+    const stretchFactor = 5;
+
+    if (resistorImage.complete) {
+      ctx.drawImage(
+        resistorImage,
+        -RESISTOR.LENGTH / 2,  // x position
+        -RESISTOR.WIDTH / 2 - 25,   // y position
+        RESISTOR.LENGTH,       // width
+        RESISTOR.WIDTH*stretchFactor        // height
+      );
+    }
   },
 
   getCurrents: (props, state) => {
