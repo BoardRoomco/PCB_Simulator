@@ -13,6 +13,7 @@ const SILICON_COLOR = '#2ecc71';
 
 export default {
   typeID: BaseModel.typeID,
+  renderOrder: -1,
 
   numOfVoltages: 2,
   numOfCurrentPaths: 1,
@@ -38,24 +39,25 @@ export default {
   getBoundingBox: get2PointBoundingBox(GRID_SIZE * 2),
 
   render: (ctx, props) => {
-    const {
-      tConnectors: [c1],
-      colors
-    } = props;
+    ctx.save();
+    
+    ctx.globalAlpha = 0.8;
+    ctx.fillStyle = SILICON_COLOR;
+    ctx.fillRect(
+      -GRID_SIZE,
+      -GRID_SIZE,
+      GRID_SIZE * 10,
+      GRID_SIZE * 10
+    );
+    
+    ctx.restore();
 
+    const { tConnectors: [c1], colors } = props;
     ctx.beginPath();
     ctx.strokeStyle = colors[0];
     ctx.moveTo(c1.x, 0);
     ctx.lineTo(0, 0);
     ctx.stroke();
-
-    ctx.fillStyle = SILICON_COLOR;
-    ctx.fillRect(
-      -GRID_SIZE,
-      -GRID_SIZE,
-      GRID_SIZE * 2,
-      GRID_SIZE * 2
-    );
   },
 
   getCurrents: (props, state) => {
