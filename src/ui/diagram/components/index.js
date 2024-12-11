@@ -10,6 +10,8 @@ import Resistor from './Resistor';
 import Capacitor from './Capacitor';
 import Inductor from './Inductor';
 
+import Silicon from './Silicon'; 
+
 const VIEWS = [
   CurrentSource,
   VoltageSource,
@@ -17,7 +19,8 @@ const VIEWS = [
   Capacitor,
   Inductor,
   Resistor,
-  Wire
+  Wire,
+  Silicon
 ];
 
 function toKVPair(component) {

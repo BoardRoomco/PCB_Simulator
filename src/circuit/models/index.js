@@ -7,6 +7,7 @@ import VoltageSource from './VoltageSource';
 import Ground from './Ground';
 import Resistor from './Resistor';
 import Wire from './Wire';
+import Silicon from './Silicon';
 
 // These keys are used to identify the typeID for each component model
 const MODELS = {
@@ -16,7 +17,8 @@ const MODELS = {
   VoltageSource,
   Ground,
   Resistor,
-  Wire
+  Wire,
+  //Silicon
 };
 
 const commonFunctionNames = [
