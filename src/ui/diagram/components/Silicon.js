@@ -39,9 +39,8 @@ export default {
   getBoundingBox: get2PointBoundingBox(GRID_SIZE * 2),
 
   render: (ctx, props) => {
-    ctx.save();
+    ctx.globalCompositeOperation = 'destination-over';
     
-    ctx.globalAlpha = 0.8;
     ctx.fillStyle = SILICON_COLOR;
     ctx.fillRect(
       -GRID_SIZE,
@@ -49,9 +48,9 @@ export default {
       GRID_SIZE * 10,
       GRID_SIZE * 10
     );
-    
-    ctx.restore();
 
+    ctx.globalCompositeOperation = 'source-over';
+    
     const { tConnectors: [c1], colors } = props;
     ctx.beginPath();
     ctx.strokeStyle = colors[0];
