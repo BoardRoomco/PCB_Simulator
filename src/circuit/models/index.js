@@ -18,7 +18,7 @@ const MODELS = {
   Ground,
   Resistor,
   Wire,
-  //Silicon
+  Silicon
 };
 
 const commonFunctionNames = [

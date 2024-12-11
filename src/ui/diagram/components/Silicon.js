@@ -1,80 +1,86 @@
-const W = 50;  // Match ArtWrapper's constants
-const H = W;
+import { BaseData } from '../../../circuit/models';
+import transforms from '../render/transforms';
+import { get2PointBoundingBox } from '../boundingBox.js';
+import { getDragFunctionFor } from '../Utils.js';
+import { GRID_SIZE } from '../Constants.js';
 
-const Silicon = {
-    typeID: 'silicon', // Unique identifier for this component
-    numOfVoltages: 2, // Including implicit ground (always 0V)
-    numOfCurrentPaths: 1, // Number of current paths
-    numOfConnectors: 1, // Number of connectors
-  
-    dragPoint: (minLength, maxLength) => (coords) => {
-      // Dragging functionality for Silicon
-      return {
-        x: Math.max(minLength, Math.min(maxLength, coords.x)),
-        y: coords.y,
-      };
-    },
-  
-    transform: {
-      transformCanvas(ctx, props, renderFn) {
-        ctx.save();
-        // For the sidebar preview, we want to center it
-        ctx.translate(W/2, H/2);
-        renderFn();
-        ctx.restore();
-      },
-      
-      getTransformedConnectors(dragPoints) {
-        // ArtWrapper expects this to transform dragPoints into connectors
-        return dragPoints.map(point => ({
-          x: point.x,
-          y: point.y
-        }));
-      },
-      
-      transformConnector(props, connector) {
-        return connector;
-      }
-    },
-  
-    getBoundingBox: (length) => ({
-      x: -length / 2,
-      y: -length / 2,
-      width: length,
-      height: length,
-    }),
-  
-    render(ctx, props) {
-      const size = { width: W * 0.6, height: H * 0.6 }; // Scale relative to canvas size
-      
-      // Draw a simple square for the preview
-      ctx.fillStyle = 'green';
-      ctx.fillRect(
-        -size.width/2,
-        -size.height/2,
-        size.width,
-        size.height
-      );
-    },
-  
-    getCurrents: (props, state) => {
-      const {
-        currents = [0]
-      } = state;
-  
-      return currents;
-    },
-  
-    renderCurrent: (props, state, renderBetween) => {
-      const {
-        tConnectors: [c],
-        currentOffsets: [offset]
-      } = props;
-  
-      // Positive current goes in opposite direction of drag
-      renderBetween({x: 0, y: 0}, c, offset);
+const MIN_LENGTH = GRID_SIZE * 3;
+const MAX_LENGTH = MIN_LENGTH;
+const NUM_OF_CONNECTORS = 1;
+
+const BaseModel = BaseData.Silicon;
+const SILICON_COLOR = '#2ecc71';
+
+export default {
+  typeID: BaseModel.typeID,
+
+  numOfVoltages: 2,
+  numOfCurrentPaths: 1,
+  numOfConnectors: NUM_OF_CONNECTORS,
+
+  width: GRID_SIZE * 2,
+  editablesSchema: {
+    voltage: {
+      type: 'number',
+      unit: 'V'
     }
-  };
+  },
+  defaultEditables: {
+    voltage: {
+      value: 0
+    }
+  },
+  labelWith: 'voltage',
+
+  dragPoint: getDragFunctionFor(MIN_LENGTH, MAX_LENGTH),
+  transform: transforms[NUM_OF_CONNECTORS],
   
-  export default Silicon;
+  getBoundingBox: get2PointBoundingBox(GRID_SIZE * 2),
+
+  render: (ctx, props) => {
+    const {
+      tConnectors: [c1],
+      colors
+    } = props;
+
+    ctx.beginPath();
+    ctx.strokeStyle = colors[0];
+    ctx.moveTo(c1.x, 0);
+    ctx.lineTo(0, 0);
+    ctx.stroke();
+
+    ctx.fillStyle = SILICON_COLOR;
+    ctx.fillRect(
+      -GRID_SIZE,
+      -GRID_SIZE,
+      GRID_SIZE * 2,
+      GRID_SIZE * 2
+    );
+  },
+
+  getCurrents: (props, state) => {
+    const {
+      editables: {
+        voltage: {
+          value: voltage = 0
+        }
+      }
+    } = props;
+
+    const {
+      voltages: [v0] = [0]
+    } = state;
+
+    return [voltage - v0];
+  },
+
+  renderCurrent: (props, state, renderBetween) => {
+    const {
+      tConnectors: [c],
+      currentOffsets: [offset]
+    } = props;
+
+    renderBetween({x: 0, y: 0}, c, offset);
+  }
+};
   

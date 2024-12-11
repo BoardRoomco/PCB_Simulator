@@ -1,20 +1,17 @@
+import { GROUND_NODE } from '../../Constants.js';
+import { stampVoltageSource } from '../equation';
+
 export default {
-    data: {
-      nodes: [], // PCB has no electrical nodes
-      numVoltSources: 0, // PCB does not provide voltage sources
-      vSourceNums: [], // No voltage sources associated
-    },
-    functions: {
-      stamp: () => {
-        // No electrical stamping is required for the PCB
-      },
-      // This function might help in defining PCB properties or fetching dimensions
-      defineProperties: (width, height) => {
-        return {
-          width,
-          height,
-        };
-      },
-    },
-  };
+  data: {
+    nodes: [],
+    numVoltSources: 1,
+    vSourceNums: []
+  },
+  functions: {
+    stamp: (data, equation) => {
+      const {nodes: [node], vSourceNums: [vNum]} = data;
+      stampVoltageSource(equation)(0, GROUND_NODE, node, vNum);
+    }
+  }
+};
   
