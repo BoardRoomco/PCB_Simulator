@@ -37,7 +37,7 @@ export default function ({ctx, theme, circuitState, components}) {
   const render = renderCurrent(ctx, circuitState);
 
   ctx.save();
-  ctx.fillStyle = theme.COLORS.current;
+  ctx.globalAlpha = 0;  // Set opacity to 0 instead of using transparent color
 
   components.forEach(component => {
     const ComponentType = lookupComponent(component);
