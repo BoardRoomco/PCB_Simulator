@@ -11,6 +11,8 @@ const MIN_LENGTH = GRID_SIZE;
 const BaseWireModel = BaseData.Wire;
 
 const NUM_OF_CONNECTORS = 2;
+const WIRE_COLOR = '#000000';
+
 export default {
   typeID: BaseWireModel.typeID,
 
@@ -42,7 +44,7 @@ export default {
     // Format voltages to two decimal places
   const formattedVoltages = voltages.map(voltage => voltage.toFixed(2));
   
-    ctx.strokeStyle = colors[0];
+    ctx.strokeStyle = WIRE_COLOR;
 
     const [c1, c2] = tConnectors;
     ctx.beginPath();

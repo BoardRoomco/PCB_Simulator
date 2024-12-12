@@ -7,15 +7,13 @@ export default function({ctx, theme, volts2RGB, circuitState, components}) {
   components.forEach((component) => {
     const ComponentType = lookupComponent(component);
 
-    const toRGB = volts2RGB(theme.COLORS);
-    const voltages = circuitState[component.id].voltages;
     const colors = component.hovered
-    ? R.repeat(theme.COLORS.highlight, ComponentType.numOfVoltages || 1)
-    : R.map(toRGB, voltages);
+      ? R.repeat(theme.COLORS.highlight, ComponentType.numOfVoltages || 1)
+      : R.repeat(theme.COLORS.base, ComponentType.numOfVoltages || 1);
 
     const props = {
       ...component,
-      voltages,
+      voltages: circuitState[component.id].voltages,
       colors
     };
 
