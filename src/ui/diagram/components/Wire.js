@@ -11,7 +11,7 @@ const MIN_LENGTH = GRID_SIZE;
 const BaseWireModel = BaseData.Wire;
 
 const NUM_OF_CONNECTORS = 2;
-const WIRE_COLOR = '#000000';
+const WIRE_COLOR = '#90EE90';
 
 export default {
   typeID: BaseWireModel.typeID,
@@ -45,13 +45,14 @@ export default {
   const formattedVoltages = voltages.map(voltage => voltage.toFixed(2));
   
     ctx.strokeStyle = WIRE_COLOR;
+    ctx.lineWidth = 0.1; // Set smaller line width here
 
     const [c1, c2] = tConnectors;
     ctx.beginPath();
     ctx.moveTo(c1.x, 0);
     ctx.lineTo(c2.x, 0);
     ctx.stroke();
-
+  
     ctx.fillStyle = 'black';  // Set color for the text (can be customized)
     ctx.font = '12px Arial';  // Set font for the text
     
