@@ -60,7 +60,7 @@ export default {
     const dotRadius = 3;
     ctx.fillStyle = props.colors[0];
     
-    // Left connection point
+   /* // Left connection point
     ctx.beginPath();
     ctx.arc(-COMPONENT_SIZE/2, 0, dotRadius, 0, Math.PI * 2);
     ctx.fill();
@@ -70,6 +70,7 @@ export default {
     ctx.beginPath();
     ctx.arc(COMPONENT_SIZE/2, 0, dotRadius, 0, Math.PI * 2);
     ctx.fill();
+*/
 
     // Only try to draw the image if it's loaded successfully
     if (capacitorImage.complete && capacitorImage.naturalWidth !== 0) {

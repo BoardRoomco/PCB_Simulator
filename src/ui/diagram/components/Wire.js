@@ -1,12 +1,12 @@
 import { BaseData } from '../../../circuit/models';
 import transforms from '../render/transforms';
-
 import { get2PointBoundingBox } from '../boundingBox.js';
-
 import { getDragFunctionFor } from '../Utils.js';
 import { GRID_SIZE, LINE_WIDTH } from '../Constants.js';
+import { distance } from '../../utils/DrawingUtils';
 
 const MIN_LENGTH = GRID_SIZE;
+const HOVER_RADIUS = 10; // Radius around connector for hover detection
 
 const BaseWireModel = BaseData.Wire;
 
@@ -29,23 +29,18 @@ export default {
     const {
       tConnectors,
       colors,
-      voltages
+      voltages = [],
+      dragPointIndex
     } = props;
 
-    console.log('tConnectors:', tConnectors);
-    console.log('colors:', colors);
-    console.log('voltages:', voltages);
-  
-    if (!tConnectors || !voltages || !colors) {
+    if (!tConnectors || !colors) {
       console.error('Missing required props for render');
-      return;  // Early return if props are missing
+      return;
     }
 
-    // Format voltages to two decimal places
-  const formattedVoltages = voltages.map(voltage => voltage.toFixed(2));
-  
+    // Draw the wire
     ctx.strokeStyle = WIRE_COLOR;
-    ctx.lineWidth = 0.1; // Set smaller line width here
+    ctx.lineWidth = 0.1;
 
     const [c1, c2] = tConnectors;
     ctx.beginPath();
@@ -53,18 +48,20 @@ export default {
     ctx.lineTo(c2.x, 0);
     ctx.stroke();
   
-    ctx.fillStyle = 'black';  // Set color for the text (can be customized)
-    ctx.font = '12px Arial';  // Set font for the text
-    
-    ctx.fillText(`${formattedVoltages[0]} V`, c1.x, 15);
-    ctx.fillText(`${formattedVoltages[1]} V`, c2.x, 15);
+    // Only show voltage for hovered connector
+    if (dragPointIndex !== undefined && dragPointIndex !== false && voltages[dragPointIndex] !== undefined) {
+      ctx.fillStyle = 'black';
+      ctx.font = '12px Arial';
+      const voltage = voltages[dragPointIndex];
+      const connector = tConnectors[dragPointIndex];
+      ctx.fillText(`${voltage.toFixed(2)}V`, connector.x, 15);
+    }
   },
 
   getCurrents: (props, state) => {
     const {
       currents = [0]
     } = state;
-
     return currents;
   },
 
@@ -73,7 +70,6 @@ export default {
       tConnectors: [c1, c2],
       currentOffsets: [offset]
     } = props;
-
     renderBetween(c1, c2, offset);
   }
 };
