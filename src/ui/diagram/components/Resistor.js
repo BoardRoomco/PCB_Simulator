@@ -26,7 +26,7 @@ export default {
   numOfCurrentPaths: 1,
   numOfConnectors: NUM_OF_CONNECTORS,
 
-  width: BOUNDING_BOX_WIDTH, // for label positioning
+  width: BOUNDING_BOX_WIDTH,
   editablesSchema: {
     resistance: {
       type: 'number',
@@ -48,8 +48,15 @@ export default {
   render: (ctx, props) => {
     const {
       tConnectors,
-      colors
+      colors,
+      voltages = [],
+      dragPointIndex
     } = props;
+
+    if (!tConnectors || !colors) {
+      console.error('Missing required props for render');
+      return;
+    }
 
     const [c1, c2] = tConnectors;
 
@@ -70,11 +77,19 @@ export default {
     if (resistorImage.complete) {
       ctx.drawImage(
         resistorImage,
-        -RESISTOR.LENGTH / 2,  // x position
-        -RESISTOR.WIDTH / 2 - 25,   // y position
-        RESISTOR.LENGTH,       // width
-        RESISTOR.WIDTH*stretchFactor        // height
+        -RESISTOR.LENGTH / 2,
+        -RESISTOR.WIDTH / 2 - 25,
+        RESISTOR.LENGTH,
+        RESISTOR.WIDTH * stretchFactor
       );
+    }
+
+    if (dragPointIndex !== undefined && dragPointIndex !== false && voltages[dragPointIndex] !== undefined) {
+      ctx.fillStyle = 'black';
+      ctx.font = '12px Arial';
+      const voltage = voltages[dragPointIndex];
+      const connector = tConnectors[dragPointIndex];
+      ctx.fillText(`${voltage.toFixed(2)}V`, connector.x, 15);
     }
   },
 

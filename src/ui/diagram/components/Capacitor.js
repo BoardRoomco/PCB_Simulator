@@ -4,30 +4,20 @@ import transforms from '../render/transforms';
 import { getDragFunctionFor } from '../Utils.js';
 import {
   BOUNDING_BOX_PADDING,
+  CAPACITOR,
   GRID_SIZE
 } from '../Constants.js';
 
-const MIN_LENGTH = GRID_SIZE * 3;
-const COMPONENT_SIZE = GRID_SIZE * 4;
+const CAPACITOR_LENGTH = GRID_SIZE * 2;
+const BOUNDING_BOX_WIDTH = CAPACITOR.WIDTH + BOUNDING_BOX_PADDING * 2;
+const MIN_LENGTH = CAPACITOR_LENGTH + GRID_SIZE;
 
 const BaseCapacitorModel = BaseData.Capacitor;
-const DEFAULT_CAPACITANCE = 10e-6;
+const DEFAULT_CAPACITANCE = 1e-6;
 const NUM_OF_CONNECTORS = 2;
 
 const capacitorImage = new Image();
-capacitorImage.src = './icons/capacitor.png';
-
-// Add more detailed error handling
-capacitorImage.onerror = (err) => {
-  console.error('Failed to load capacitor image:', err);
-  console.error('Image path:', capacitorImage.src);
-  console.error('Current location:', window.location.href);
-};
-
-// Add load success handler
-capacitorImage.onload = () => {
-  console.log('Capacitor image loaded successfully');
-};
+capacitorImage.src = '/icons/capacitor.png';
 
 export default {
   typeID: BaseCapacitorModel.typeID,
@@ -36,7 +26,7 @@ export default {
   numOfCurrentPaths: 1,
   numOfConnectors: NUM_OF_CONNECTORS,
 
-  width: COMPONENT_SIZE,
+  width: BOUNDING_BOX_WIDTH,
   editablesSchema: {
     capacitance: {
       type: 'number',
@@ -53,55 +43,83 @@ export default {
   dragPoint: getDragFunctionFor(MIN_LENGTH),
   transform: transforms[NUM_OF_CONNECTORS],
 
-  getBoundingBox: get2PointBoundingBox(COMPONENT_SIZE),
+  getBoundingBox: get2PointBoundingBox(BOUNDING_BOX_WIDTH),
 
   render: (ctx, props) => {
-    // Draw connection points first
-    const dotRadius = 3;
-    ctx.fillStyle = props.colors[0];
-    
-   /* // Left connection point
-    ctx.beginPath();
-    ctx.arc(-COMPONENT_SIZE/2, 0, dotRadius, 0, Math.PI * 2);
-    ctx.fill();
-    
-    // Right connection point
-    ctx.fillStyle = props.colors[1];
-    ctx.beginPath();
-    ctx.arc(COMPONENT_SIZE/2, 0, dotRadius, 0, Math.PI * 2);
-    ctx.fill();
-*/
+    const {
+      tConnectors,
+      colors,
+      voltages = [],
+      dragPointIndex
+    } = props;
 
-    // Only try to draw the image if it's loaded successfully
-    if (capacitorImage.complete && capacitorImage.naturalWidth !== 0) {
-      try {
-        ctx.drawImage(
-          capacitorImage,
-          -COMPONENT_SIZE/2,
-          -COMPONENT_SIZE/2,
-          COMPONENT_SIZE,
-          COMPONENT_SIZE
-        );
-      } catch (err) {
-        console.error('Error drawing capacitor:', err);
-        
-        // Draw a fallback shape if image fails
-        ctx.strokeStyle = props.colors[0];
-        ctx.strokeRect(
-          -COMPONENT_SIZE/2,
-          -COMPONENT_SIZE/2,
-          COMPONENT_SIZE,
-          COMPONENT_SIZE
-        );
-      }
+    if (!tConnectors || !colors) {
+      console.error('Missing required props for render');
+      return;
+    }
+
+    const [c1, c2] = tConnectors;
+
+    ctx.beginPath();
+    ctx.strokeStyle = colors[0];
+    ctx.moveTo(c1.x, 0);
+    ctx.lineTo(-CAPACITOR_LENGTH / 2, 0);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.strokeStyle = colors[1];
+    ctx.moveTo(c2.x, 0);
+    ctx.lineTo(CAPACITOR_LENGTH / 2, 0);
+    ctx.stroke();
+
+    const stretchFactor = 5;
+
+    if (capacitorImage.complete) {
+      ctx.drawImage(
+        capacitorImage,
+        -CAPACITOR_LENGTH / 2,
+        -CAPACITOR.WIDTH / 2 - 25,
+        CAPACITOR_LENGTH,
+        CAPACITOR.WIDTH * stretchFactor
+      );
+    } else {
+      ctx.beginPath();
+      ctx.strokeStyle = colors[0];
+      ctx.moveTo(-CAPACITOR_LENGTH / 2, -CAPACITOR.WIDTH / 2);
+      ctx.lineTo(-CAPACITOR_LENGTH / 2, CAPACITOR.WIDTH / 2);
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.strokeStyle = colors[1];
+      ctx.moveTo(CAPACITOR_LENGTH / 2, -CAPACITOR.WIDTH / 2);
+      ctx.lineTo(CAPACITOR_LENGTH / 2, CAPACITOR.WIDTH / 2);
+      ctx.stroke();
+    }
+
+    if (dragPointIndex !== undefined && dragPointIndex !== false && voltages[dragPointIndex] !== undefined) {
+      ctx.fillStyle = 'black';
+      ctx.font = '12px Arial';
+      const voltage = voltages[dragPointIndex];
+      const connector = tConnectors[dragPointIndex];
+      ctx.fillText(`${voltage.toFixed(2)}V`, connector.x, 15);
     }
   },
 
   getCurrents: (props, state) => {
     const {
-      currents = [0]
+      editables: {
+        capacitance: {
+          value: capacitance = DEFAULT_CAPACITANCE
+        }
+      }
+    } = props;
+
+    const {
+      voltages: [v0, v1] = [0, 0],
+      current = 0
     } = state;
-    return currents;
+
+    return [current];
   },
 
   renderCurrent: (props, state, renderBetween) => {
@@ -109,7 +127,6 @@ export default {
       tConnectors: [c1, c2],
       currentOffsets: [offset]
     } = props;
-
     renderBetween(c1, c2, offset);
   }
 };
