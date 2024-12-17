@@ -9,6 +9,7 @@ import circuit from './reducers/mainLoop';
 import showAddToaster from './reducers/toaster';
 import views from './reducers/views';
 import currentSpeed from './reducers/currentSpeed';
+import tools from './reducers/tools';
 
 export default combineReducers({
   mode,
@@ -17,6 +18,7 @@ export default combineReducers({
   addingComponent,
   movingComponent,
   selected,
+  tools,
 
   // used to render canvas
   views,

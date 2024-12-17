@@ -5,6 +5,7 @@ import renderConnectors from './connectors';
 import renderDragPoints from './dragPoints';
 import renderLabels from './labels';
 import renderCurrent from './current';
+import renderTools from './tools';
 
 import {LINE_WIDTH} from '../Constants';
 
@@ -24,13 +25,12 @@ export const initCanvas = (ctx, theme) => {
 };
 
 export default (store, ctx, theme) => {
-
   const render = () => {
     const {
       views,
+      tools,
       circuit: {
         components: circuitState,
-        // error,
         volts2RGB
       }
     } = store.getState();
@@ -38,13 +38,13 @@ export default (store, ctx, theme) => {
     clearCanvas(ctx);
 
     const viewsList = R.values(views);
-    // TODO colors = calculateColors()
 
     renderViews({ctx, theme, volts2RGB, circuitState, components: viewsList});
     renderConnectors({ctx, theme, components: viewsList});
     renderDragPoints({ctx, theme, components: viewsList});
     renderLabels({ctx, theme, components: viewsList});
     renderCurrent({ctx, theme, circuitState, components: viewsList});
+    renderTools({ctx, theme, tools});
   };
 
   initCanvas(ctx, theme);

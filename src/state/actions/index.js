@@ -26,6 +26,12 @@ export const MOUSE_MOVED = 'MOUSE_MOVED';
 export const SHOW_ADD_TOASTER = 'SHOW_ADD_TOASTER';
 export const HIDE_ADD_TOASTER = 'HIDE_ADD_TOASTER';
 
+// Multimeter Actions
+export const TOGGLE_MULTIMETER = 'TOGGLE_MULTIMETER';
+export const UPDATE_PROBE_POSITION = 'UPDATE_PROBE_POSITION';
+export const UPDATE_MULTIMETER_MEASUREMENT = 'UPDATE_MULTIMETER_MEASUREMENT';
+export const CHANGE_MULTIMETER_MODE = 'CHANGE_MULTIMETER_MODE';
+
 // Action creators
 export function canvasMouseEnter() {
   return function(dispatch, getState) {
@@ -308,3 +314,22 @@ export function printCircuit() {
     type: PRINT_CIRCUIT
   };
 }
+
+export const toggleMultimeter = () => ({
+  type: TOGGLE_MULTIMETER
+});
+
+export const updateProbePosition = (color, position) => ({
+  type: UPDATE_PROBE_POSITION,
+  payload: { color, position }
+});
+
+export const updateMultimeterMeasurement = (value, unit) => ({
+  type: UPDATE_MULTIMETER_MEASUREMENT,
+  payload: { value, unit }
+});
+
+export const changeMultimeterMode = (mode) => ({
+  type: CHANGE_MULTIMETER_MODE,
+  payload: { mode }
+});
