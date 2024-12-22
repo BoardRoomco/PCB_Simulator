@@ -9,7 +9,7 @@ const MAX_LENGTH = MIN_LENGTH;
 const NUM_OF_CONNECTORS = 1;
 
 const BaseModel = BaseData.Silicon;
-const SILICON_COLOR = '#2ecc71';
+const SILICON_COLOR = '#006633';
 
 export default {
   typeID: BaseModel.typeID,

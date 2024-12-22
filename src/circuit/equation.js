@@ -77,3 +77,21 @@ export const stampCurrentSource = equation => (current, fromNode, toNode) => {
   stampInputVector(equation)(fromNode, -current);
   stampInputVector(equation)(toNode, current);
 };
+
+export const stampVCVS = equation => (gain, outNode1, outNode2, inNode1, inNode2, vNum) => {
+  const {numOfVSources, numOfVSourcesStamped} = equation;
+  assert(numOfVSourcesStamped < numOfVSources, `Already stamped declared number of voltage sources (${numOfVSources})`);
+
+  const vIndex = equation.numOfNodes + vNum;
+  equation.numOfVSourcesStamped++;
+
+  // Stamp the output voltage source
+  stampNodalAdmittanceMatrix(equation)(vIndex, outNode1, 1);
+  stampNodalAdmittanceMatrix(equation)(vIndex, outNode2, -1);
+  stampNodalAdmittanceMatrix(equation)(outNode1, vIndex, 1);
+  stampNodalAdmittanceMatrix(equation)(outNode2, vIndex, -1);
+
+  // Stamp the controlling voltage
+  stampNodalAdmittanceMatrix(equation)(vIndex, inNode1, -gain);
+  stampNodalAdmittanceMatrix(equation)(vIndex, inNode2, gain);
+};

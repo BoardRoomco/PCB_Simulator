@@ -42,9 +42,8 @@ export default (store, ctx, theme) => {
     renderViews({ctx, theme, volts2RGB, circuitState, components: viewsList});
     renderConnectors({ctx, theme, components: viewsList});
     renderDragPoints({ctx, theme, components: viewsList});
-    renderLabels({ctx, theme, components: viewsList});
     renderCurrent({ctx, theme, circuitState, components: viewsList});
-    renderTools({ctx, theme, tools});
+    renderTools({ctx, theme, tools, store});
   };
 
   initCanvas(ctx, theme);

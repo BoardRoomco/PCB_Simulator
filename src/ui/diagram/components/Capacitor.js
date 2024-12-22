@@ -72,15 +72,16 @@ export default {
     ctx.lineTo(CAPACITOR_LENGTH / 2, 0);
     ctx.stroke();
 
-    const stretchFactor = 5;
-
     if (capacitorImage.complete) {
+      const imageWidth = CAPACITOR_LENGTH;
+      const imageHeight = CAPACITOR.WIDTH * 2;
+
       ctx.drawImage(
         capacitorImage,
-        -CAPACITOR_LENGTH / 2,
-        -CAPACITOR.WIDTH / 2 - 25,
-        CAPACITOR_LENGTH,
-        CAPACITOR.WIDTH * stretchFactor
+        -imageWidth / 2,
+        -imageHeight / 2,
+        imageWidth,
+        imageHeight
       );
     } else {
       ctx.beginPath();

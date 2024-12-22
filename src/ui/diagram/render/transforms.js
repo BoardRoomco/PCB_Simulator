@@ -82,6 +82,21 @@ export default {
       return dragPoints;
     }
   },
+  3: {
+    transformCanvas: centerMid,
+    getTransformedConnectors(dragPoints) {
+      let half = length(dragPoints) / 2;
+      half = Math.round(half);
+      return [
+        {x: -half, y: -half/2},  // V+
+        {x: -half, y: half/2},   // V-
+        {x: half, y: 0}          // Vout
+      ];
+    },
+    getConnectors(dragPoints) {
+      return dragPoints;
+    }
+  },
   identity: {
     transformCanvas: (ctx, props, render) => { render(props); },
     getTransformedConnectors: R.identity,
