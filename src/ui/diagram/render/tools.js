@@ -1,5 +1,6 @@
 import { renderMultimeter } from '../tools/Multimeter';
 
+
 const updateMultimeterMeasurement = (store, multimeter) => {
   if (!multimeter || !multimeter.active) return;
 
@@ -68,6 +69,7 @@ export default function renderTools({ctx, theme, tools, store}) {
       multimeter: tools.multimeter
     });
   }
+
 
   // Restore the canvas state
   ctx.restore();

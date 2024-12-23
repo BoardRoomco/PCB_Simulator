@@ -9,6 +9,8 @@ import { TIMESTEP } from '../../ui/diagram/loop';
 // Action types
 export const CHANGE_MODE = 'CHANGE_MODE';
 
+export const SAVE_CIRCUIT_CHALLENGE = 'SAVE_CIRCUIT_CHALLENGE';
+
 export const SET_HOVERED_COMPONENT = 'SET_HOVERED_COMPONENT';
 export const SELECT_HOVERED_COMPONENT = 'SELECT_HOVERED_COMPONENT';
 export const UNSELECT_COMPONENT = 'UNSELECT_COMPONENT';
@@ -33,6 +35,9 @@ export const UPDATE_MULTIMETER_MEASUREMENT = 'UPDATE_MULTIMETER_MEASUREMENT';
 export const CHANGE_MULTIMETER_MODE = 'CHANGE_MULTIMETER_MODE';
 
 // Action creators
+export const saveCircuitAsChallenge = () => ({
+  type: SAVE_CIRCUIT_CHALLENGE
+});
 export function canvasMouseEnter() {
   return function(dispatch, getState) {
     const { mode, views } = getState();
