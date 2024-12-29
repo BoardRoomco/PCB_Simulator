@@ -234,8 +234,7 @@ export default function mainLoopReducer(circuit = INITIAL_STATE, action) {
   }
 
   case SAVE_CIRCUIT_CHALLENGE:
-    console.log('Saving circuit:', circuit);
-    // Save circuit logic here
+    // Just return the state, saving is handled in the action creator
     return circuit;
 
   case EDIT_COMPONENT:

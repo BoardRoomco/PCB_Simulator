@@ -36,41 +36,48 @@ export const CHANGE_MULTIMETER_MODE = 'CHANGE_MULTIMETER_MODE';
 
 // Action creators
 export const saveCircuitAsChallenge = () => {
-  return async function(dispatch, getState) {
-    try {
-      const state = getState();
-      const circuitState = {
-        circuitGraph: state.circuit.circuitGraph,
-        components: state.circuit.components,
-        timestep: state.circuit.timestep,
-        simTimePerSec: state.circuit.simTimePerSec
-      };
+  return function(dispatch, getState) {
+    console.log('=== Save Circuit Action Triggered ===');
+    
+    // Get the exact state structure from Redux
+    const state = getState();
+    const circuitState = {
+      views: state.views,
+      circuit: state.circuit
+    };
 
-      const response = await fetch('http://localhost:5000/save-circuit', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(circuitState)
-      });
+    console.log('Saving circuit state:', circuitState);
 
-      if (!response.ok) {
-        throw new Error('Failed to save circuit');
+    fetch('http://localhost:3001/save-circuit', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(circuitState)
+    })
+    .then(response => {
+      console.log('Server response status:', response.status);
+      return response.json();
+    })
+    .then(data => {
+      console.log('Server response data:', data);
+      if (!data.success) {
+        throw new Error(data.message || 'Failed to save circuit');
       }
-
       console.log('Circuit saved successfully!');
-      return {
+      dispatch({
         type: SAVE_CIRCUIT_CHALLENGE,
         success: true
-      };
-    } catch (error) {
-      console.error('Error saving circuit:', error);
-      return {
+      });
+    })
+    .catch(error => {
+      console.error('Error in save circuit flow:', error);
+      dispatch({
         type: SAVE_CIRCUIT_CHALLENGE,
         success: false,
         error: error.message
-      };
-    }
+      });
+    });
   };
 };
 

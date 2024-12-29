@@ -13,7 +13,8 @@ import {
   loopBegin,
   loopUpdate,
   updateCurrentOffsets,
-  rationaliseCurrentOffsets
+  rationaliseCurrentOffsets,
+  saveCircuitAsChallenge
 } from '../../state/actions';
 import resize from '../Resize';
 import {relMouseCoords} from '../utils/DrawingUtils';
@@ -67,9 +68,14 @@ class CircuitDiagram extends React.Component {
   }
 
   handleKeyPress(event) {
+    console.log('Key pressed:', event.key);
     const { store } = this.context;
+    
     if (event.key.toLowerCase() === 'm') {
       store.dispatch(toggleMultimeter());
+    } else if (event.key.toLowerCase() === 's') {
+      console.log('Save key detected');
+      store.dispatch(saveCircuitAsChallenge());
     }
   }
 
