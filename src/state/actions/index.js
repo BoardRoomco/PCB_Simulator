@@ -3,8 +3,8 @@ import Vector from 'immutable-vector2d';
 import uuid from 'node-uuid';
 
 import MODES from '../../Modes';
-
 import { TIMESTEP } from '../../ui/diagram/loop';
+import Components from '../../ui/diagram/components';
 
 // Action types
 export const CHANGE_MODE = 'CHANGE_MODE';
@@ -41,8 +41,42 @@ export const saveCircuitAsChallenge = () => {
     
     // Get the exact state structure from Redux
     const state = getState();
+    
+    // Process views to ensure all required data is included
+    const processedViews = Object.entries(state.views).reduce((acc, [id, view]) => {
+      // Get the component type
+      const ComponentType = Components[view.typeID];
+      if (!ComponentType) {
+        console.error(`Invalid component type: ${view.typeID}, skipping`);
+        return acc;
+      }
+
+      // Get number of current paths for this component type
+      const numPaths = ComponentType.numOfCurrentPaths || 1;
+
+      // Convert dragPoints to plain objects for JSON serialization
+      const dragPoints = (view.dragPoints || []).map(point => ({
+        x: point.x,
+        y: point.y
+      }));
+
+      // Ensure all required properties are present
+      acc[id] = {
+        ...view,
+        id, // Ensure id is explicitly set
+        typeID: view.typeID,
+        dragPoints,
+        connectors: view.connectors || [],
+        tConnectors: view.tConnectors || [],
+        currentOffsets: view.currentOffsets || R.repeat(0, numPaths),
+        extraOffsets: view.extraOffsets || R.repeat(0, numPaths),
+        props: view.props || {}
+      };
+      return acc;
+    }, {});
+
     const circuitState = {
-      views: state.views,
+      views: processedViews,
       circuit: state.circuit
     };
 
@@ -365,10 +399,53 @@ export function loadCircuit(circuitId) {
         const { circuit } = data;
         console.log('Circuit loaded:', circuit);
 
+        // Validate views data
+        if (!circuit.views || typeof circuit.views !== 'object') {
+          throw new Error('Invalid views data in loaded circuit');
+        }
+
+        // Process and validate each view
+        const views = Object.entries(circuit.views).reduce((acc, [id, view]) => {
+          if (!view.typeID) {
+            console.error(`View ${id} missing typeID, skipping`);
+            return acc;
+          }
+
+          // Validate component type exists
+          const ComponentType = Components[view.typeID];
+          if (!ComponentType) {
+            console.error(`Invalid component type: ${view.typeID}, skipping`);
+            return acc;
+          }
+
+          // Convert dragPoints back to Vector objects if they're not already
+          const dragPoints = (view.dragPoints || []).map(point => {
+            return point instanceof Vector ? point : Vector.fromObject(point);
+          });
+
+          // Initialize current paths based on component type
+          const numPaths = ComponentType.numOfCurrentPaths || 1;
+
+          acc[id] = {
+            ...view,
+            typeID: view.typeID,
+            dragPoints,
+            connectors: view.connectors || [],
+            tConnectors: view.tConnectors || [],
+            currentOffsets: view.currentOffsets || R.repeat(0, numPaths),
+            extraOffsets: view.extraOffsets || R.repeat(0, numPaths),
+            props: view.props || {}
+          };
+          return acc;
+        }, {});
+
+        // Log the processed views for debugging
+        console.log('Processed views:', views);
+
         dispatch({
           type: LOAD_CIRCUIT,
           circuit: {
-            views: circuit.views,
+            views,
             circuit: circuit.circuit
           }
         });

@@ -97,13 +97,25 @@ export default function viewsReducer(views = {}, action) {
     const { circuit } = action;
     const setInitialCurrentPositions = (view) => {
       const ComponentType = Components[view.typeID];
+      if (!ComponentType) {
+        console.error(`Invalid component type: ${view.typeID}`);
+        return view;
+      }
+      const numPaths = ComponentType.numOfCurrentPaths || 1;
       return {
         ...view,
-        currentOffsets: R.repeat(STANDING_OFFSET, ComponentType.numOfCurrentPaths),
-        extraOffsets: R.repeat(0, ComponentType.numOfCurrentPaths)
+        currentOffsets: R.repeat(STANDING_OFFSET, numPaths),
+        extraOffsets: R.repeat(0, numPaths)
       };
     };
     const vectoriseDragPoints = (view) => {
+      if (!view.dragPoints || !Array.isArray(view.dragPoints)) {
+        console.error(`View ${view.id} missing dragPoints array, using empty array`);
+        return {
+          ...view,
+          dragPoints: []
+        };
+      }
       return {
         ...view,
         dragPoints: R.map(Vector.fromObject, view.dragPoints)
@@ -111,19 +123,39 @@ export default function viewsReducer(views = {}, action) {
     };
     const setConnectorPositions = (view) => {
       const ComponentType = Components[view.typeID];
+      if (!ComponentType) {
+        console.error(`Invalid component type: ${view.typeID}`);
+        return view;
+      }
+      if (!view.dragPoints || !Array.isArray(view.dragPoints)) {
+        console.error(`View ${view.id} missing dragPoints array, using empty array`);
+        return {
+          ...view,
+          dragPoints: [],
+          tConnectors: [],
+          connectors: []
+        };
+      }
       return {
         ...view,
         tConnectors: ComponentType.transform.getTransformedConnectors(view.dragPoints),
         connectors: ComponentType.transform.getConnectors(view.dragPoints)
       };
     };
+
+    // Ensure we're working with an array of views
+    const viewsArray = circuit.views ? Object.values(circuit.views) : [];
+    console.log('Views array before processing:', viewsArray);
+
     const loadedViews = R.pipe(
       R.map(setInitialCurrentPositions),
       R.map(vectoriseDragPoints),
       R.map(setConnectorPositions),
       R.groupBy(R.prop('id')),
       R.map(R.head)
-    )(circuit);
+    )(viewsArray);
+
+    console.log('Loaded views after processing:', loadedViews);
     return loadedViews;
   }
   case PRINT_CIRCUIT: {
