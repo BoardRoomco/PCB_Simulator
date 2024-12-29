@@ -350,14 +350,35 @@ export function rationaliseCurrentOffsets() {
 }
 
 export const LOAD_CIRCUIT = 'LOAD_CIRCUIT';
-export function loadCircuit(circuit) {
+export function loadCircuit(circuitId) {
   return function(dispatch) {
-    dispatch({
-      type: LOAD_CIRCUIT,
-      circuit
-    });
-    dispatch(loopBegin());
-    dispatch(loopUpdate(TIMESTEP));
+    console.log('Loading circuit with ID:', circuitId);
+    
+    fetch(`http://localhost:3001/load-circuit/${circuitId}`)
+      .then(response => response.json())
+      .then(data => {
+        if (!data.success) {
+          console.error('Failed to load circuit:', data.message);
+          return;
+        }
+
+        const { circuit } = data;
+        console.log('Circuit loaded:', circuit);
+
+        dispatch({
+          type: LOAD_CIRCUIT,
+          circuit: {
+            views: circuit.views,
+            circuit: circuit.circuit
+          }
+        });
+        
+        dispatch(loopBegin());
+        dispatch(loopUpdate(TIMESTEP));
+      })
+      .catch(error => {
+        console.error('Error loading circuit:', error);
+      });
   };
 }
 

@@ -14,7 +14,8 @@ import {
   loopUpdate,
   updateCurrentOffsets,
   rationaliseCurrentOffsets,
-  saveCircuitAsChallenge
+  saveCircuitAsChallenge,
+  loadCircuit
 } from '../../state/actions';
 import resize from '../Resize';
 import {relMouseCoords} from '../utils/DrawingUtils';
@@ -76,6 +77,13 @@ class CircuitDiagram extends React.Component {
     } else if (event.key.toLowerCase() === 's') {
       console.log('Save key detected');
       store.dispatch(saveCircuitAsChallenge());
+    } else if (event.key.toLowerCase() === 'l') {
+      console.log('Load key detected');
+      // For now, prompt the user for the circuit ID
+      const circuitId = prompt('Enter the circuit ID to load:');
+      if (circuitId) {
+        store.dispatch(loadCircuit(circuitId));
+      }
     }
   }
 

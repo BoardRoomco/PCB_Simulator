@@ -1,7 +1,7 @@
 // node_quickstart/index.js
 const express = require('express');
 const cors = require('cors');
-const { MongoClient } = require("mongodb");
+const { MongoClient, ObjectId } = require("mongodb");
 
 const app = express();
 app.use(cors());  // Enable CORS for all routes
@@ -72,6 +72,43 @@ app.post('/save-circuit', async (req, res) => {
         res.status(500).json({ 
             success: false, 
             message: error.message 
+        });
+    }
+});
+
+// Get circuit endpoint
+app.get('/load-circuit/:id', async (req, res) => {
+    console.log('=== Load Circuit Request Received ===');
+    let currentClient = null;
+    
+    try {
+        const circuitId = req.params.id;
+        console.log('Loading circuit with ID:', circuitId);
+
+        // Connect to MongoDB
+        currentClient = await getClient();
+        const database = currentClient.db('pcb_challenges');
+        const circuits = database.collection('circuits');
+
+        // Find the circuit by ID
+        const circuit = await circuits.findOne({ _id: new ObjectId(circuitId) });
+        
+        if (!circuit) {
+            return res.status(404).json({
+                success: false,
+                message: 'Circuit not found'
+            });
+        }
+
+        res.json({
+            success: true,
+            circuit
+        });
+    } catch (error) {
+        console.error('Error loading circuit:', error);
+        res.status(500).json({
+            success: false,
+            message: error.message
         });
     }
 });
