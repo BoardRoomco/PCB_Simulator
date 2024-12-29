@@ -11,7 +11,7 @@ import Capacitor from './Capacitor';
 import Inductor from './Inductor';
 
 import Silicon from './Silicon'; 
-import OpAmp from './OpAmp';
+import Diode from './Diode'; 
 
 const VIEWS = [
   CurrentSource,
@@ -22,7 +22,7 @@ const VIEWS = [
   Resistor,
   Wire,
   Silicon,
-  OpAmp
+  Diode
 ];
 
 function toKVPair(component) {

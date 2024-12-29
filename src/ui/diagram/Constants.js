@@ -16,6 +16,11 @@ export const CAPACITOR = {
   GAP: 10
 };
 
+export const DIODE = {
+  WIDTH: 26,
+  GAP: 10
+};
+
 export const INDUCTOR = {
   WIDTH: 12,
   RADIUS: 8
