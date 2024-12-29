@@ -26,7 +26,8 @@ import {
   DELETE_COMPONENT,
   ADDING_MOVED,
   MOVING_MOVED,
-  LOAD_CIRCUIT
+  LOAD_CIRCUIT,
+  SAVE_CIRCUIT_CHALLENGE
 } from '../actions';
 
 const INITIAL_STATE = {
@@ -231,6 +232,11 @@ export default function mainLoopReducer(circuit = INITIAL_STATE, action) {
       voltageRange
     };
   }
+
+  case SAVE_CIRCUIT_CHALLENGE:
+    console.log('Saving circuit:', circuit);
+    // Save circuit logic here
+    return circuit;
 
   case EDIT_COMPONENT:
   case DELETE_COMPONENT:

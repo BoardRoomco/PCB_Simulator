@@ -2,9 +2,19 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 from NR_method import MatrixSolver
 import numpy as np
+from pymongo import MongoClient
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
+
+# MongoDB setup
+client = MongoClient(os.getenv('MONGODB_URI'))
+db = client['circuit_simulator']
+circuits_collection = db['circuits']
 
 @app.route('/solve', methods=['POST'])
 def solve_circuit():
@@ -47,6 +57,27 @@ def solve_circuit():
             'error': str(e),
             'result': None,
             'message': 'Server error'
+        }), 500
+
+@app.route('/save-circuit', methods=['POST'])
+def save_circuit():
+    try:
+        circuit_data = request.get_json()
+        
+        # Insert the circuit into MongoDB
+        result = circuits_collection.insert_one(circuit_data)
+        
+        return jsonify({
+            'success': True,
+            'message': 'Circuit saved successfully',
+            'circuit_id': str(result.inserted_id)
+        })
+
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e),
+            'message': 'Failed to save circuit'
         }), 500
 
 @app.route('/health', methods=['GET'])

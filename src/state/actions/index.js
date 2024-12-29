@@ -35,9 +35,45 @@ export const UPDATE_MULTIMETER_MEASUREMENT = 'UPDATE_MULTIMETER_MEASUREMENT';
 export const CHANGE_MULTIMETER_MODE = 'CHANGE_MULTIMETER_MODE';
 
 // Action creators
-export const saveCircuitAsChallenge = () => ({
-  type: SAVE_CIRCUIT_CHALLENGE
-});
+export const saveCircuitAsChallenge = () => {
+  return async function(dispatch, getState) {
+    try {
+      const state = getState();
+      const circuitState = {
+        circuitGraph: state.circuit.circuitGraph,
+        components: state.circuit.components,
+        timestep: state.circuit.timestep,
+        simTimePerSec: state.circuit.simTimePerSec
+      };
+
+      const response = await fetch('http://localhost:5000/save-circuit', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(circuitState)
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to save circuit');
+      }
+
+      console.log('Circuit saved successfully!');
+      return {
+        type: SAVE_CIRCUIT_CHALLENGE,
+        success: true
+      };
+    } catch (error) {
+      console.error('Error saving circuit:', error);
+      return {
+        type: SAVE_CIRCUIT_CHALLENGE,
+        success: false,
+        error: error.message
+      };
+    }
+  };
+};
+
 export function canvasMouseEnter() {
   return function(dispatch, getState) {
     const { mode, views } = getState();
@@ -214,9 +250,14 @@ export function loopUpdate(delta) {
 
 export const KEY_PRESS = 'KEY_PRESS';
 export function keyPress(key) {
-  return {
-    type: KEY_PRESS,
-    key
+  return function(dispatch) {
+    if (key.toLowerCase() === 's') {
+      dispatch(saveCircuitAsChallenge());
+    }
+    return {
+      type: KEY_PRESS,
+      key
+    };
   };
 }
 

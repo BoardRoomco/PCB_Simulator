@@ -21,6 +21,11 @@ export const DIODE = {
   GAP: 10
 };
 
+export const TRANSISTOR = {
+  WIDTH: 26,
+  GAP: 10
+};
+
 export const INDUCTOR = {
   WIDTH: 12,
   RADIUS: 8

@@ -9,6 +9,7 @@ import Resistor from './Resistor';
 import Wire from './Wire';
 import Silicon from './Silicon';
 import Diode from './Diode';
+import Transistor from './Transistor';
 
 // These keys are used to identify the typeID for each component model
 const MODELS = {
@@ -20,7 +21,8 @@ const MODELS = {
   Resistor,
   Wire,
   Silicon, 
-  Diode
+  Diode,
+  Transistor
 };
 
 const commonFunctionNames = [
