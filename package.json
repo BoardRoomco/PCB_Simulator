@@ -23,11 +23,12 @@
   "homepage": "http://github.com/circuitsim/circuit-simulator",
   "license": "EPL-1.0",
   "scripts": {
-    "dev": "gulp",
+    "dev": "start cmd /c \"python src/circuit/models/Python_APIs/app.py\" && gulp",
     "build": "rimraf build && gulp build",
     "lint": "eslint src/",
     "mocha": "mocha --opts mocha.opts 'src/**/__tests__/*'",
-    "test": "npm run lint && npm run mocha"
+    "test": "npm run lint && npm run mocha",
+    "start-python": "python src/circuit/models/Python_APIs/app.py"
   },
   "dependencies": {
     "art": "^0.10.0",
