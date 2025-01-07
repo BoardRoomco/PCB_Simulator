@@ -21,6 +21,10 @@ const BaseVoltageSourceModel = BaseData.VoltageSource;
 const DEFAULT_VOLTAGE = 5;
 const NUM_OF_CONNECTORS = 2;
 const WIRE_COLOR = '#90EE90';
+
+const voltageSourceImage = new Image();
+voltageSourceImage.src = '/icons/voltage_source.png';
+
 export default {
   typeID: BaseVoltageSourceModel.typeID,
 
@@ -61,43 +65,75 @@ export default {
   labelWith: 'voltage',
 
   dragPoint: getDragFunctionFor(MIN_LENGTH),
-  transform: transforms[NUM_OF_CONNECTORS],
+  transform: transforms["2-voltage"],
 
   getBoundingBox: get2PointBoundingBox(BOUNDING_BOX_WIDTH),
 
-  render: (ctx, {
-    tConnectors,
-    colors
-  }) => {
+  render: (ctx, props) => {
+    const {
+      tConnectors,
+      colors,
+      voltages = [],
+      dragPointIndex
+    } = props;
+
+    if (!tConnectors || !colors) {
+      console.error('Missing required props for render');
+      return;
+    }
+
     const [c1, c2] = tConnectors;
 
-    ctx.beginPath();
-    ctx.strokeStyle = WIRE_COLOR;
-    ctx.lineWidth = 0.1;
-    ctx.moveTo(c1.x, 0);
-    ctx.lineTo(-RADIUS, 0);
-    ctx.stroke();
+    if (voltageSourceImage.complete) {
+      const scale = 0.8;
+      const imageWidth = RADIUS * 8 * scale;
+      const imageHeight = imageWidth * 1.2;
 
-    ctx.beginPath();
-    ctx.strokeStyle = WIRE_COLOR;
-    ctx.lineWidth = 0.1;
-    ctx.moveTo(c2.x, 0);
-    ctx.lineTo(RADIUS, 0);
-    ctx.stroke();
+      // Draw connecting wires first
+      ctx.beginPath();
+      ctx.strokeStyle = WIRE_COLOR;
+      ctx.lineWidth = 0.1;
+      ctx.moveTo(c1.x, c1.y);
+      ctx.lineTo(imageWidth / 2, c1.y);
+      ctx.stroke();
 
-    // Draw the circle and plus symbol with original colors
-    ctx.beginPath();
-    ctx.strokeStyle = colors[1];
-    ctx.arc(0, 0, RADIUS, Math.PI, -Math.PI);
-    ctx.stroke();
+      ctx.beginPath();
+      ctx.strokeStyle = WIRE_COLOR;
+      ctx.lineWidth = 0.1;
+      ctx.moveTo(c2.x, c2.y);
+      ctx.lineTo(imageWidth / 2, c2.y);
+      ctx.stroke();
 
-    // plus
-    ctx.translate(RADIUS / 2, 0);
-    ctx.moveTo(PLUS_LENGTH, 0);
-    ctx.lineTo(-PLUS_LENGTH, 0);
-    ctx.moveTo(0, PLUS_LENGTH);
-    ctx.lineTo(0, -PLUS_LENGTH);
-    ctx.stroke();
+      ctx.drawImage(
+        voltageSourceImage,
+        -imageWidth / 2,
+        -imageHeight / 2,
+        imageWidth,
+        imageHeight
+      );
+    } else {
+      // Draw voltage source symbol (fallback if image not loaded)
+      ctx.beginPath();
+      ctx.strokeStyle = colors[0];
+      ctx.arc(0, 0, RADIUS, 0, Math.PI * 2);
+      ctx.stroke();
+
+      // Draw plus and minus symbols
+      ctx.beginPath();
+      ctx.moveTo(-RADIUS / 2, 0);
+      ctx.lineTo(RADIUS / 2, 0);
+      ctx.moveTo(0, -RADIUS / 2);
+      ctx.lineTo(0, RADIUS / 2);
+      ctx.stroke();
+    }
+
+    if (dragPointIndex !== undefined && dragPointIndex !== false && voltages[dragPointIndex] !== undefined) {
+      ctx.fillStyle = 'black';
+      ctx.font = '12px Arial';
+      const voltage = voltages[dragPointIndex];
+      const connector = tConnectors[dragPointIndex];
+      ctx.fillText(`${voltage.toFixed(2)}V`, connector.x, 15);
+    }
   },
 
   getCurrents: (props, state) => {

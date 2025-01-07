@@ -82,14 +82,26 @@ export default {
       return dragPoints;
     }
   },
+  "2-voltage": {  // New transform specifically for voltage sources
+    transformCanvas: centerMid,
+    getTransformedConnectors(dragPoints) {
+      let half = length(dragPoints) / 2;
+      half = Math.round(half);
+      // Position connectors further apart for voltage sources
+      return [{x: half * 1.5, y: 9}, {x: half * 1.5, y: -9}];
+    },
+    getConnectors(dragPoints) {
+      return dragPoints;
+    }
+  },
   3: {
     transformCanvas: centerMid,
     getTransformedConnectors(dragPoints) {
       let half = length(dragPoints) / 2;
       half = Math.round(half);
       return [
-        {x: -half/3, y: -half-20},  // V+
-        {x: -half, y: half/11},   // V-
+        {x: -half, y: -half/2},  // V+
+        {x: -half, y: half/2},   // V-
         {x: half, y: 0}          // Vout
       ];
     },
