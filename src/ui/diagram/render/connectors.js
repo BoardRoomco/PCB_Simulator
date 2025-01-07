@@ -24,11 +24,10 @@ export default function ({ctx, theme, components}) {
   const renderWithCtx = renderConnectors(ctx);
 
   ctx.save();
-  ctx.fillStyle = theme.COLORS.base;
-  components.forEach(renderWithCtx);
-
-  ctx.fillStyle = theme.COLORS.highlight;
+  
+  // Only render connectors for hovered components
   const hoveredComponents = R.filter(c => c.hovered, components);
+  ctx.fillStyle = theme.COLORS.highlight;
   hoveredComponents.forEach(renderWithCtx);
 
   ctx.restore();
