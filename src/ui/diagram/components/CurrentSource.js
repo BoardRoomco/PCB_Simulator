@@ -15,6 +15,7 @@ const BaseCurrentSourceModel = BaseData.CurrentSource;
 
 const DEFAULT_CURRENT = 1e-3;
 const NUM_OF_CONNECTORS = 2;
+const WIRE_COLOR = '#90EE90';
 
 export default {
   typeID: BaseCurrentSourceModel.typeID,
@@ -56,18 +57,20 @@ export default {
     }
 
     const [c1, c2] = tConnectors;
-    const width = CURRENT_SOURCE.WIDTH || GRID_SIZE; // Fallback if WIDTH is undefined
-    const length = CURRENT_SOURCE.LENGTH || GRID_SIZE; // Fallback if LENGTH is undefined
+    const width = CURRENT_SOURCE.WIDTH || GRID_SIZE;
+    const length = CURRENT_SOURCE.LENGTH || GRID_SIZE;
 
     // Draw connecting lines
     ctx.beginPath();
-    ctx.strokeStyle = colors[0];
+    ctx.strokeStyle = WIRE_COLOR;
+    ctx.lineWidth = 0.1;
     ctx.moveTo(c1.x, 0);
     ctx.lineTo(-length / 2, 0);
     ctx.stroke();
 
     ctx.beginPath();
-    ctx.strokeStyle = colors[1];
+    ctx.strokeStyle = WIRE_COLOR;
+    ctx.lineWidth = 0.1;
     ctx.moveTo(c2.x, 0);
     ctx.lineTo(length / 2, 0);
     ctx.stroke();

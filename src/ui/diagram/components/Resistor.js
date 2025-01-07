@@ -15,6 +15,7 @@ const MIN_LENGTH = RESISTOR.LENGTH + GRID_SIZE;
 const BaseResistorModel = BaseData.Resistor;
 const DEFAULT_RESISTANCE = 1e3;
 const NUM_OF_CONNECTORS = 2;
+const WIRE_COLOR = '#90EE90';
 
 const resistorImage = new Image();
 resistorImage.src = '/icons/resistor.png';
@@ -61,13 +62,15 @@ export default {
     const [c1, c2] = tConnectors;
 
     ctx.beginPath();
-    ctx.strokeStyle = colors[0];
+    ctx.strokeStyle = WIRE_COLOR;
+    ctx.lineWidth = 0.1;
     ctx.moveTo(c1.x, 0);
     ctx.lineTo(-RESISTOR.LENGTH / 2, 0);
     ctx.stroke();
 
     ctx.beginPath();
-    ctx.strokeStyle = colors[1];
+    ctx.strokeStyle = WIRE_COLOR;
+    ctx.lineWidth = 0.1;
     ctx.moveTo(c2.x, 0);
     ctx.lineTo(RESISTOR.LENGTH / 2, 0);
     ctx.stroke();

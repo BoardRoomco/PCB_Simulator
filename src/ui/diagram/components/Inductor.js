@@ -16,6 +16,8 @@ const BaseInductorModel = BaseData.Inductor;
 
 const DEFAULT_INDUCTANCE = 1;
 const NUM_OF_CONNECTORS = 2;
+const WIRE_COLOR = '#90EE90';
+
 export default {
   typeID: BaseInductorModel.typeID,
 
@@ -58,7 +60,8 @@ export default {
     const [c1, c2] = tConnectors;
 
     ctx.beginPath();
-    ctx.strokeStyle = colors[0];
+    ctx.strokeStyle = WIRE_COLOR;
+    ctx.lineWidth = 0.1;
     ctx.moveTo(c1.x, 0);
     ctx.lineTo(-INDUCTOR.RADIUS * 3, 0);
     ctx.stroke();
@@ -75,7 +78,8 @@ export default {
     ctx.stroke();
 
     ctx.beginPath();
-    ctx.strokeStyle = colors[1];
+    ctx.strokeStyle = WIRE_COLOR;
+    ctx.lineWidth = 0.1;
     ctx.moveTo(c2.x, 0);
     ctx.lineTo(INDUCTOR.RADIUS * 3, 0);
     ctx.stroke();

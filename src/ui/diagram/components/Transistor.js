@@ -15,6 +15,7 @@ const MIN_LENGTH = TRANSISTOR_LENGTH + GRID_SIZE;
 const BaseTransistorModel = BaseData.Transistor;
 const DEFAULT_CAPACITANCE = 1e-6;
 const NUM_OF_CONNECTORS = 2;
+const WIRE_COLOR = '#90EE90';
 
 const transistorImage = new Image();
 transistorImage.src = '/icons/transistor.png';
@@ -62,13 +63,15 @@ export default {
 
     // Draw connecting wires
     ctx.beginPath();
-    ctx.strokeStyle = colors[0];
+    ctx.strokeStyle = WIRE_COLOR;
+    ctx.lineWidth = 0.1;
     ctx.moveTo(c1.x, 0);
     ctx.lineTo(-TRANSISTOR_LENGTH / 2, 0);
     ctx.stroke();
 
     ctx.beginPath();
-    ctx.strokeStyle = colors[1];
+    ctx.strokeStyle = WIRE_COLOR;
+    ctx.lineWidth = 0.1;
     ctx.moveTo(c2.x, 0);
     ctx.lineTo(TRANSISTOR_LENGTH / 2, 0);
     ctx.stroke();

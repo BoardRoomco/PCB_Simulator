@@ -14,12 +14,13 @@ import {
 const PLUS_LENGTH = LINE_WIDTH * 2;
 const { RADIUS } = VOLTAGE_SOURCE;
 const BOUNDING_BOX_WIDTH = VOLTAGE_SOURCE.RADIUS * 2 + BOUNDING_BOX_PADDING * 2;
-const MIN_LENGTH = RADIUS * 2 + GRID_SIZE;
+const MIN_LENGTH = GRID_SIZE * 3;
 
 const BaseVoltageSourceModel = BaseData.VoltageSource;
 
 const DEFAULT_VOLTAGE = 5;
 const NUM_OF_CONNECTORS = 2;
+const WIRE_COLOR = '#90EE90';
 export default {
   typeID: BaseVoltageSourceModel.typeID,
 
@@ -71,18 +72,24 @@ export default {
     const [c1, c2] = tConnectors;
 
     ctx.beginPath();
-    ctx.strokeStyle = colors[0];
+    ctx.strokeStyle = WIRE_COLOR;
+    ctx.lineWidth = 0.1;
     ctx.moveTo(c1.x, 0);
     ctx.lineTo(-RADIUS, 0);
     ctx.stroke();
 
     ctx.beginPath();
-    ctx.strokeStyle = colors[1];
-
-    ctx.arc(0, 0, RADIUS, Math.PI, -Math.PI);
-
+    ctx.strokeStyle = WIRE_COLOR;
+    ctx.lineWidth = 0.1;
     ctx.moveTo(c2.x, 0);
     ctx.lineTo(RADIUS, 0);
+    ctx.stroke();
+
+    // Draw the circle and plus symbol with original colors
+    ctx.beginPath();
+    ctx.strokeStyle = colors[1];
+    ctx.arc(0, 0, RADIUS, Math.PI, -Math.PI);
+    ctx.stroke();
 
     // plus
     ctx.translate(RADIUS / 2, 0);
@@ -90,7 +97,6 @@ export default {
     ctx.lineTo(-PLUS_LENGTH, 0);
     ctx.moveTo(0, PLUS_LENGTH);
     ctx.lineTo(0, -PLUS_LENGTH);
-
     ctx.stroke();
   },
 

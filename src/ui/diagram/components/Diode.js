@@ -15,6 +15,7 @@ const MIN_LENGTH = DIODE_LENGTH + GRID_SIZE;
 const BaseDiodeModel = BaseData.Diode;
 const DEFAULT_CAPACITANCE = 1e-6;
 const NUM_OF_CONNECTORS = 2;
+const WIRE_COLOR = '#90EE90';
 
 const diodeImage = new Image();
 diodeImage.src = '/icons/diode.png';
@@ -62,13 +63,15 @@ export default {
 
     // Draw connecting wires
     ctx.beginPath();
-    ctx.strokeStyle = colors[0];
+    ctx.strokeStyle = WIRE_COLOR;
+    ctx.lineWidth = 0.1;
     ctx.moveTo(c1.x, 0);
     ctx.lineTo(-DIODE_LENGTH / 2, 0);
     ctx.stroke();
 
     ctx.beginPath();
-    ctx.strokeStyle = colors[1];
+    ctx.strokeStyle = WIRE_COLOR;
+    ctx.lineWidth = 0.1;
     ctx.moveTo(c2.x, 0);
     ctx.lineTo(DIODE_LENGTH / 2, 0);
     ctx.stroke();
