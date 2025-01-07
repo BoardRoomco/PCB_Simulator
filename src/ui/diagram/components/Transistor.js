@@ -61,46 +61,61 @@ export default {
 
     const [c1, c2] = tConnectors;
 
-    // Draw connecting wires
-    ctx.beginPath();
-    ctx.strokeStyle = WIRE_COLOR;
-    ctx.lineWidth = 0.1;
-    ctx.moveTo(c1.x, 0);
-    ctx.lineTo(-TRANSISTOR_LENGTH / 2, 0);
-    ctx.stroke();
+    if (transistorImage.complete) {
+      const scale = 0.4;
+      const imageWidth = TRANSISTOR_LENGTH * 4 * scale;
+      const imageHeight = imageWidth * 1.2;
 
-    ctx.beginPath();
-    ctx.strokeStyle = WIRE_COLOR;
-    ctx.lineWidth = 0.1;
-    ctx.moveTo(c2.x, 0);
-    ctx.lineTo(TRANSISTOR_LENGTH / 2, 0);
-    ctx.stroke();
+      // Draw the image first
+      ctx.drawImage(
+        transistorImage,
+        -imageWidth / 2,
+        -imageHeight / 2,
+        imageWidth,
+        imageHeight
+      );
 
-    // Draw transistor symbol
-    ctx.beginPath();
-    ctx.strokeStyle = colors[0];
-    
-    // Draw vertical line (base)
-    ctx.moveTo(-TRANSISTOR_LENGTH/2, -TRANSISTOR.WIDTH/2);
-    ctx.lineTo(-TRANSISTOR_LENGTH/2, TRANSISTOR.WIDTH/2);
-    ctx.stroke();
+      // Draw connecting wires
+      ctx.beginPath();
+      ctx.strokeStyle = WIRE_COLOR;
+      ctx.lineWidth = 0.1;
+      ctx.moveTo(c1.x, 0);
+      ctx.lineTo(-imageWidth / 2, 0);
+      ctx.stroke();
 
-    // Draw emitter and collector lines
-    ctx.beginPath();
-    ctx.moveTo(-TRANSISTOR_LENGTH/4, -TRANSISTOR.WIDTH/2);
-    ctx.lineTo(TRANSISTOR_LENGTH/2, -TRANSISTOR.WIDTH/4);
-    ctx.moveTo(-TRANSISTOR_LENGTH/4, TRANSISTOR.WIDTH/2);
-    ctx.lineTo(TRANSISTOR_LENGTH/2, TRANSISTOR.WIDTH/4);
-    ctx.stroke();
+      ctx.beginPath();
+      ctx.strokeStyle = WIRE_COLOR;
+      ctx.lineWidth = 0.1;
+      ctx.moveTo(c2.x, 0);
+      ctx.lineTo(imageWidth / 2, 0);
+      ctx.stroke();
+    } else {
+      // Draw transistor symbol (fallback if image not loaded)
+      ctx.beginPath();
+      ctx.strokeStyle = colors[0];
+      
+      // Draw vertical line (base)
+      ctx.moveTo(-TRANSISTOR_LENGTH/2, -TRANSISTOR.WIDTH/2);
+      ctx.lineTo(-TRANSISTOR_LENGTH/2, TRANSISTOR.WIDTH/2);
+      ctx.stroke();
 
-    // Draw arrow
-    ctx.beginPath();
-    const arrowSize = TRANSISTOR.WIDTH/4;
-    ctx.moveTo(TRANSISTOR_LENGTH/4, 0);
-    ctx.lineTo(TRANSISTOR_LENGTH/4 - arrowSize, arrowSize);
-    ctx.lineTo(TRANSISTOR_LENGTH/4 - arrowSize, -arrowSize);
-    ctx.closePath();
-    ctx.fill();
+      // Draw emitter and collector lines
+      ctx.beginPath();
+      ctx.moveTo(-TRANSISTOR_LENGTH/4, -TRANSISTOR.WIDTH/2);
+      ctx.lineTo(TRANSISTOR_LENGTH/2, -TRANSISTOR.WIDTH/4);
+      ctx.moveTo(-TRANSISTOR_LENGTH/4, TRANSISTOR.WIDTH/2);
+      ctx.lineTo(TRANSISTOR_LENGTH/2, TRANSISTOR.WIDTH/4);
+      ctx.stroke();
+
+      // Draw arrow
+      ctx.beginPath();
+      const arrowSize = TRANSISTOR.WIDTH/4;
+      ctx.moveTo(TRANSISTOR_LENGTH/4, 0);
+      ctx.lineTo(TRANSISTOR_LENGTH/4 - arrowSize, arrowSize);
+      ctx.lineTo(TRANSISTOR_LENGTH/4 - arrowSize, -arrowSize);
+      ctx.closePath();
+      ctx.fill();
+    }
 
     if (dragPointIndex !== undefined && dragPointIndex !== false && voltages[dragPointIndex] !== undefined) {
       ctx.fillStyle = 'black';

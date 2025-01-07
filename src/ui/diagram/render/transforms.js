@@ -88,8 +88,8 @@ export default {
       let half = length(dragPoints) / 2;
       half = Math.round(half);
       return [
-        {x: -half, y: -half/2},  // V+
-        {x: -half, y: half/2},   // V-
+        {x: -half/3, y: -half-20},  // V+
+        {x: -half, y: half/11},   // V-
         {x: half, y: 0}          // Vout
       ];
     },

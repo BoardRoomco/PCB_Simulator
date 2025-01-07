@@ -77,21 +77,36 @@ export default {
     ctx.stroke();
 
     // Draw diode symbol
-    ctx.beginPath();
-    ctx.strokeStyle = colors[0];
-    
-    // Draw triangle
-    ctx.moveTo(-DIODE_LENGTH/2, -DIODE.WIDTH/2);
-    ctx.lineTo(-DIODE_LENGTH/2, DIODE.WIDTH/2);
-    ctx.lineTo(DIODE_LENGTH/2, 0);
-    ctx.closePath();
-    ctx.stroke();
+    if (diodeImage.complete) {
+      const scale = 0.4;
+      const imageWidth = DIODE_LENGTH * 4 * scale;
+      const imageHeight = imageWidth * 1.2;
 
-    // Draw vertical line
-    ctx.beginPath();
-    ctx.moveTo(DIODE_LENGTH/2, -DIODE.WIDTH/2);
-    ctx.lineTo(DIODE_LENGTH/2, DIODE.WIDTH/2);
-    ctx.stroke();
+      ctx.drawImage(
+        diodeImage,
+        -imageWidth / 2,
+        -imageHeight / 2,
+        imageWidth,
+        imageHeight
+      );
+    } else {
+      // Draw diode symbol (fallback if image not loaded)
+      ctx.beginPath();
+      ctx.strokeStyle = colors[0];
+      
+      // Draw triangle
+      ctx.moveTo(-DIODE_LENGTH/2, -DIODE.WIDTH/2);
+      ctx.lineTo(-DIODE_LENGTH/2, DIODE.WIDTH/2);
+      ctx.lineTo(DIODE_LENGTH/2, 0);
+      ctx.closePath();
+      ctx.stroke();
+
+      // Draw vertical line
+      ctx.beginPath();
+      ctx.moveTo(DIODE_LENGTH/2, -DIODE.WIDTH/2);
+      ctx.lineTo(DIODE_LENGTH/2, DIODE.WIDTH/2);
+      ctx.stroke();
+    }
 
     if (dragPointIndex !== undefined && dragPointIndex !== false && voltages[dragPointIndex] !== undefined) {
       ctx.fillStyle = 'black';

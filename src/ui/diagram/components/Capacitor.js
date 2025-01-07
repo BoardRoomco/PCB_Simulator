@@ -76,8 +76,9 @@ export default {
     ctx.stroke();
 
     if (capacitorImage.complete) {
-      const imageWidth = CAPACITOR_LENGTH;
-      const imageHeight = CAPACITOR.WIDTH * 2;
+      const scale = 0.35;
+      const imageWidth = CAPACITOR_LENGTH * 3 * scale;
+      const imageHeight = CAPACITOR.WIDTH * 2 * scale;
 
       ctx.drawImage(
         capacitorImage,
