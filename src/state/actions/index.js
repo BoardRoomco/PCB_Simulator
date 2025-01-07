@@ -34,6 +34,8 @@ export const UPDATE_PROBE_POSITION = 'UPDATE_PROBE_POSITION';
 export const UPDATE_MULTIMETER_MEASUREMENT = 'UPDATE_MULTIMETER_MEASUREMENT';
 export const CHANGE_MULTIMETER_MODE = 'CHANGE_MULTIMETER_MODE';
 
+export const TOGGLE_COMPETITION_MODE = 'TOGGLE_COMPETITION_MODE';
+
 // Action creators
 export const saveCircuitAsChallenge = () => {
   return function(dispatch, getState) {
@@ -294,6 +296,8 @@ export function keyPress(key) {
   return function(dispatch) {
     if (key.toLowerCase() === 's') {
       dispatch(saveCircuitAsChallenge());
+    } else if (key.toLowerCase() === 'c') {
+      dispatch(toggleCompetitionMode());
     }
     return {
       type: KEY_PRESS,
@@ -483,4 +487,8 @@ export const updateMultimeterMeasurement = (value, unit) => ({
 export const changeMultimeterMode = (mode) => ({
   type: CHANGE_MULTIMETER_MODE,
   payload: { mode }
+});
+
+export const toggleCompetitionMode = () => ({
+  type: TOGGLE_COMPETITION_MODE
 });

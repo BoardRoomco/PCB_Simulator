@@ -12,7 +12,8 @@ import {
   deleteComponent,
   editComponent,
   changeCurrentSpeed,
-  printCircuit
+  printCircuit,
+  toggleCompetitionMode
 } from '../state/actions';
 
 class App extends React.Component {
@@ -30,11 +31,13 @@ class App extends React.Component {
       selectedComponent,
       showAddToaster,
       currentSpeed,
+      competitionMode,
       selectMode: handleSelectMode,
       onDeleteComponent: handleDelete,
       oneditComponent: handleeditComponent,
       onChangeCurrentSpeed: handleChangeCurrentSpeed,
-      onPrintCircuit: handlePrintCircuit
+      onPrintCircuit: handlePrintCircuit,
+      onToggleCompetitionMode: handleToggleCompetitionMode
     } = this.props;
     return (
       <div style={{
@@ -44,18 +47,22 @@ class App extends React.Component {
         <Style
           rules={styles.global}
         />
-        <Sidebar
-          style={styles.side}
-          onSelectMode={handleSelectMode}
-          currentSpeed={currentSpeed}
-          selectedComponent={selectedComponent}
-          onDeleteComponent={handleDelete}
-          oneditComponent={handleeditComponent}
-          onChangeCurrentSpeed={handleChangeCurrentSpeed}
-          onPrintCircuit={handlePrintCircuit}
-        />
+        {!competitionMode && (
+          <Sidebar
+            style={styles.side}
+            onSelectMode={handleSelectMode}
+            currentSpeed={currentSpeed}
+            selectedComponent={selectedComponent}
+            onDeleteComponent={handleDelete}
+            oneditComponent={handleeditComponent}
+            onChangeCurrentSpeed={handleChangeCurrentSpeed}
+            onPrintCircuit={handlePrintCircuit}
+            onToggleCompetitionMode={handleToggleCompetitionMode}
+          />
+        )}
         <CircuitDiagram
-          getDimensions={ getCanvasSize }
+          getDimensions={getCanvasSize}
+          competitionMode={competitionMode}
         />
         <Toaster show={showAddToaster}>
           {"Click and drag on the canvas to create a component"}
@@ -86,18 +93,20 @@ App.propTypes = {
   }),
   showAddToaster: PropTypes.bool,
   currentSpeed: PropTypes.number,
+  competitionMode: PropTypes.bool.isRequired,
 
   // action creators
   selectMode: PropTypes.func.isRequired,
   onDeleteComponent: PropTypes.func.isRequired,
   oneditComponent: PropTypes.func.isRequired,
   onChangeCurrentSpeed: PropTypes.func.isRequired,
-  onPrintCircuit: PropTypes.func.isRequired
+  onPrintCircuit: PropTypes.func.isRequired,
+  onToggleCompetitionMode: PropTypes.func.isRequired
 };
 
 // Which props do we want to inject, given the global state?
 // Note: use https://github.com/faassen/reselect for better performance.
-function mapStateToProps({ showAddToaster, selected, currentSpeed, views }) {
+function mapStateToProps({ showAddToaster, selected, currentSpeed, views, tools }) {
   const fullSelectedComponent = views[selected];
   const selectedComponent = fullSelectedComponent
     ? R.pick(['typeID', 'id', 'editables'], fullSelectedComponent)
@@ -105,7 +114,8 @@ function mapStateToProps({ showAddToaster, selected, currentSpeed, views }) {
   return {
     showAddToaster,
     selectedComponent,
-    currentSpeed
+    currentSpeed,
+    competitionMode: tools.competitionMode
   };
 }
 
@@ -114,7 +124,8 @@ const mapDispatchToProps = {
   onDeleteComponent: deleteComponent,
   oneditComponent: editComponent,
   onChangeCurrentSpeed: changeCurrentSpeed,
-  onPrintCircuit: printCircuit
+  onPrintCircuit: printCircuit,
+  onToggleCompetitionMode: toggleCompetitionMode
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(App);

@@ -15,7 +15,8 @@ import {
   updateCurrentOffsets,
   rationaliseCurrentOffsets,
   saveCircuitAsChallenge,
-  loadCircuit
+  loadCircuit,
+  toggleCompetitionMode
 } from '../../state/actions';
 import resize from '../Resize';
 import {relMouseCoords} from '../utils/DrawingUtils';
@@ -84,6 +85,10 @@ class CircuitDiagram extends React.Component {
       if (circuitId) {
         store.dispatch(loadCircuit(circuitId));
       }
+    } else if (event.key.toLowerCase() === 'c') {
+      console.log('Competition mode toggle detected');
+      store.dispatch(toggleCompetitionMode());
+      console.log('Competition mode state:', store.getState().competitionMode);
     }
   }
 

@@ -2,7 +2,8 @@ import {
   TOGGLE_MULTIMETER,
   UPDATE_PROBE_POSITION,
   UPDATE_MULTIMETER_MEASUREMENT,
-  CHANGE_MULTIMETER_MODE
+  CHANGE_MULTIMETER_MODE,
+  TOGGLE_COMPETITION_MODE
 } from '../actions';
 
 import {
@@ -13,11 +14,18 @@ import {
 } from '../../ui/diagram/tools/Multimeter';
 
 const initialState = {
-  multimeter: initialMultimeterState
+  multimeter: initialMultimeterState,
+  competitionMode: false
 };
 
 export default function toolsReducer(state = initialState, action) {
   switch (action.type) {
+    case TOGGLE_COMPETITION_MODE:
+      return {
+        ...state,
+        competitionMode: !state.competitionMode
+      };
+
     case TOGGLE_MULTIMETER:
       return {
         ...state,

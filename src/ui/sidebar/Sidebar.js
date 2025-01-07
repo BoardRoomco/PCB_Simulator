@@ -73,17 +73,13 @@ export default class Sidebar extends React.Component {
 
 Sidebar.propTypes = {
   style: PropTypes.object,
-
   onSelectMode: PropTypes.func.isRequired,
-
   currentSpeed: PropTypes.number.isRequired,
-
   selectedComponent: PropTypes.shape({
     typeID: PropTypes.string.isRequired,
     id: PropTypes.string.isRequired,
     editables: PropTypes.object
   }),
-
   onDeleteComponent: PropTypes.func.isRequired,
   oneditComponent: PropTypes.func.isRequired,
   onChangeCurrentSpeed: PropTypes.func.isRequired,

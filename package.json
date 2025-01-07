@@ -23,7 +23,7 @@
   "homepage": "http://github.com/circuitsim/circuit-simulator",
   "license": "EPL-1.0",
   "scripts": {
-    "dev": "start cmd /c \"python src/circuit/models/Python_APIs/app.py\" && gulp",
+    "dev": "gulp",
     "build": "rimraf build && gulp build",
     "lint": "eslint src/",
     "mocha": "mocha --opts mocha.opts 'src/**/__tests__/*'",
