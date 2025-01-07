@@ -9,7 +9,10 @@ const MAX_LENGTH = MIN_LENGTH;
 const NUM_OF_CONNECTORS = 1;
 
 const BaseModel = BaseData.Silicon;
-const SILICON_COLOR = '#006633';
+const WIRE_COLOR = '#90EE90';
+
+const siliconImage = new Image();
+siliconImage.src = '/icons/silicon.png';
 
 export default {
   typeID: BaseModel.typeID,
@@ -41,19 +44,38 @@ export default {
   render: (ctx, props) => {
     ctx.globalCompositeOperation = 'destination-over';
     
-    ctx.fillStyle = SILICON_COLOR;
-    ctx.fillRect(
-      -GRID_SIZE,
-      -GRID_SIZE,
-      GRID_SIZE * 10,
-      GRID_SIZE * 10
-    );
+    const { tConnectors: [c1], colors } = props;
+
+    if (siliconImage.complete) {
+      const scale = 0.8;
+      const baseSize = GRID_SIZE * 14;
+      const imageWidth = baseSize * 1.4;
+      const imageHeight = baseSize * 1.8;
+
+      ctx.drawImage(
+        siliconImage,
+        -imageWidth / 2,
+        -imageHeight / 2,
+        imageWidth,
+        imageHeight
+      );
+    } else {
+      // Fallback if image not loaded
+      ctx.fillStyle = '#006633';
+      ctx.fillRect(
+        -GRID_SIZE * 1.4,
+        -GRID_SIZE * 1.8,
+        GRID_SIZE * 14,
+        GRID_SIZE * 18
+      );
+    }
 
     ctx.globalCompositeOperation = 'source-over';
     
-    const { tConnectors: [c1], colors } = props;
+    // Draw connecting wire
     ctx.beginPath();
-    ctx.strokeStyle = colors[0];
+    ctx.strokeStyle = WIRE_COLOR;
+    ctx.lineWidth = 0.1;
     ctx.moveTo(c1.x, 0);
     ctx.lineTo(0, 0);
     ctx.stroke();
