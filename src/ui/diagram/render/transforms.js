@@ -1,5 +1,6 @@
 import { midPoint } from '../../utils/DrawingUtils.js';
 import R from 'ramda';
+import Vector from 'immutable-vector2d';
 
 const length = dps => {
   return dps[1].subtract(dps[0]).length();
@@ -91,7 +92,16 @@ export default {
       return [{x: half * 1.5, y: 9}, {x: half * 1.5, y: -9}];
     },
     getConnectors(dragPoints) {
-      return dragPoints;
+      const [dp1, dp2] = dragPoints;
+      const mid = midPoint(dp1, dp2);
+      const dir = dp2.subtract(dp1).normalize();
+      const perp = new Vector(-dir.y, dir.x);
+      
+      // Use same offsets as getTransformedConnectors
+      return [
+        mid.add(perp.multiply(9)),
+        mid.add(perp.multiply(-9))
+      ];
     }
   },
   3: {

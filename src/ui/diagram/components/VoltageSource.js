@@ -104,6 +104,13 @@ export default {
       ctx.lineTo(imageWidth / 2, c2.y);
       ctx.stroke();
 
+      // Draw debug connectors
+      ctx.beginPath();
+      ctx.fillStyle = '#00008B'; // Dark blue
+      ctx.arc(c1.x, c1.y, 5, 0, Math.PI * 2);
+      ctx.arc(c2.x, c2.y, 5, 0, Math.PI * 2);
+      ctx.fill();
+
       ctx.drawImage(
         voltageSourceImage,
         -imageWidth / 2,
@@ -125,6 +132,13 @@ export default {
       ctx.moveTo(0, -RADIUS / 2);
       ctx.lineTo(0, RADIUS / 2);
       ctx.stroke();
+
+      // Draw debug connectors
+      ctx.beginPath();
+      ctx.fillStyle = '#00008B'; // Dark blue
+      ctx.arc(c1.x, c1.y, 5, 0, Math.PI * 2);
+      ctx.arc(c2.x, c2.y, 5, 0, Math.PI * 2);
+      ctx.fill();
     }
 
     if (dragPointIndex !== undefined && dragPointIndex !== false && voltages[dragPointIndex] !== undefined) {
