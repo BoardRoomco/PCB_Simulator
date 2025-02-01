@@ -51,7 +51,7 @@ export default {
       tConnectors,
       colors,
       voltages = [],
-      dragPointIndex
+      connectorIndex
     } = props;
 
     if (!tConnectors || !colors) {
@@ -87,12 +87,12 @@ export default {
       );
     }
 
-    if (dragPointIndex !== undefined && dragPointIndex !== false && voltages[dragPointIndex] !== undefined) {
+    if (connectorIndex !== undefined && connectorIndex !== false && voltages[connectorIndex] !== undefined) {
       ctx.fillStyle = 'black';
       ctx.font = '12px Arial';
-      const voltage = voltages[dragPointIndex];
-      const connector = tConnectors[dragPointIndex];
-      ctx.fillText(`${voltage.toFixed(2)}V`, connector.x, 15);
+      const voltage = voltages[connectorIndex];
+      const connector = tConnectors[connectorIndex];
+      ctx.fillText(`${voltage.toFixed(2)}V`, connector.x, connector.y - 10);
     }
   },
 

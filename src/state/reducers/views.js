@@ -271,49 +271,16 @@ export default function viewsReducer(views = {}, action) {
   }
 
   case SET_HOVERED_COMPONENT: {
-    const { mousePos } = action;
-    const viewsList = R.values(views);
-
-    const getHoverInfo = hoverFor(mousePos);
-    const toHoverInfo = view => {
-      if (!view) {
-        return null;
-      }
-      const { typeID, dragPoints } = view;
-      const { hovered, dragPointIndex } = getHoverInfo(typeID, dragPoints);
+    const mousePos = action.mousePos;
+    return R.mapObjIndexed((view) => {
+      const hover = hoverFor(mousePos)(view.typeID, view.dragPoints, view.connectors);
       return {
-        id: view.id,
-        hovered,
-        dragPointIndex
+        ...view,
+        hovered: hover.hovered,
+        dragPointIndex: hover.dragPointIndex,
+        connectorIndex: hover.connectorIndex
       };
-    };
-
-    const pickBest = R.reduce((currentBest, contender) => {
-      // TODO what if a big component completely covers a smaller one?
-      // - we should have a bias for smaller components
-      if (!currentBest) {
-        return contender;
-      }
-      return currentBest;
-    }, toHoverInfo(R.find(isHovered, viewsList))); // prefer currently hovered view
-
-    const hoveredComponentInfo = R.pipe(
-      R.map(toHoverInfo),
-      R.filter(isHovered),
-      R.ifElse(moreThanOne,
-        pickBest,
-        R.head
-      )
-    )(viewsList);
-
-    const isHoveredComponent = view => hoveredComponentInfo && view.id === hoveredComponentInfo.id;
-    const unhover = mergeOverWith({hovered: false, dragPointIndex: null});
-
-    return R.map(
-      R.ifElse(isHoveredComponent,
-        mergeOverWith(hoveredComponentInfo),
-        unhover
-      ), views);
+    }, views);
   }
 
   case UPDATE_CURRENT_OFFSETS: {
