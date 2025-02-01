@@ -16,10 +16,8 @@ export function findNearestConnectorToPoint(point, views, excludeComponentId) {
     R.values,
     R.filter(view => view.id !== excludeComponentId), // Only look at other components
     R.map(view => {
-      // Get the actual connector positions for this component
-      const Component = Components[view.typeID];
-      const connectors = Component.transform.getConnectors(view.position, view.rotation, view.size);
-      return connectors.map(connector => ({
+      // Use the actual connectors from the component
+      return view.connectors.map(connector => ({
         position: connector,
         componentId: view.id
       }));

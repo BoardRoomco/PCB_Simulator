@@ -80,7 +80,19 @@ export default {
       return [{x: -half, y: 0}, {x: half, y: 0}];
     },
     getConnectors(dragPoints) {
-      return dragPoints;
+      const [dp1, dp2] = dragPoints;
+      const mid = midPoint(dp1, dp2);
+      const dir = dp2.subtract(dp1).normalize();
+      const horz = new Vector(dir.x, dir.y);
+      
+      let half = length(dragPoints) / 2;
+      half = Math.round(half);
+      
+      // Calculate points in real space by moving half-length along the direction vector
+      return [
+        mid.add(horz.multiply(-half)),
+        mid.add(horz.multiply(half))
+      ];
     }
   },
   "2-voltage": {  // New transform specifically for voltage sources
@@ -102,10 +114,7 @@ export default {
       half = Math.round(half);
       const horzOffset = half * 1.5;
       
-      // Calculate points in real space by:
-      // 1. Moving to midpoint
-      // 2. Moving along direction vector by horzOffset
-      // 3. Moving perpendicular by ±9
+      // Calculate points in real space matching the transformed coordinates
       return [
         mid.add(horz.multiply(horzOffset)).add(perp.multiply(9)),
         mid.add(horz.multiply(horzOffset)).add(perp.multiply(-9))
@@ -124,7 +133,21 @@ export default {
       ];
     },
     getConnectors(dragPoints) {
-      return dragPoints;
+      const [dp1, dp2] = dragPoints;
+      const mid = midPoint(dp1, dp2);
+      const dir = dp2.subtract(dp1).normalize();
+      const perp = new Vector(-dir.y, dir.x);
+      const horz = new Vector(dir.x, dir.y);
+      
+      let half = length(dragPoints) / 2;
+      half = Math.round(half);
+      
+      // Calculate points in real space matching the transformed coordinates
+      return [
+        mid.add(horz.multiply(-half)).add(perp.multiply(-half/2)),  // V+
+        mid.add(horz.multiply(-half)).add(perp.multiply(half/2)),   // V-
+        mid.add(horz.multiply(half))                                // Vout
+      ];
     }
   },
   identity: {

@@ -74,7 +74,8 @@ export default {
       tConnectors,
       colors,
       voltages = [],
-      dragPointIndex
+      dragPointIndex,
+      dragPoints
     } = props;
 
     if (!tConnectors || !colors) {

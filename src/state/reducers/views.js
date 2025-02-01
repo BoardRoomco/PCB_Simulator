@@ -6,6 +6,7 @@ import { diff } from '../../ui/utils/DrawingUtils.js';
 import { snapToGrid } from '../../ui/diagram/Utils.js';
 import { hoverFor } from '../../ui/diagram/boundingBox';
 import { CURRENT } from '../../ui/diagram/Constants';
+import { findNearestConnectorToPoint } from '../../ui/utils/ConnectorUtils.js';
 
 import {
   LOAD_CIRCUIT,
@@ -32,23 +33,43 @@ const mergeOverWith = R.partial(R.merge, [R.__]);
 const isHovered = component => component.hovered;
 
 function moveSingleDragPoint(views, action) {
-  const { id, dragPointIndex, origDragPoints } = action.movingComponent; // FIXME REDUCERES
+  const { id, dragPointIndex, origDragPoints } = action.movingComponent;
 
-  const view = views[id],
-        Component = Components[view.typeID],
+  const view = views[id];
+  const Component = Components[view.typeID];
+  const fixedPointIndex = dragPointIndex === 0 ? 1 : 0;
 
-        fixedPointIndex = dragPointIndex === 0 ? 1 : 0,
-        newDragPoint = Component.dragPoint(action.mouseVector, {fixed: origDragPoints[fixedPointIndex]}),
-        dragPoints = R.update(dragPointIndex, newDragPoint, origDragPoints),
+  // First calculate the raw new drag point
+  const newDragPoint = Component.dragPoint(action.mouseVector, {
+    fixed: origDragPoints[fixedPointIndex],
+    component: view,
+    transform: Component.transform
+  });
 
-        tConnectors = Component.transform.getTransformedConnectors(dragPoints),
-        connectors = Component.transform.getConnectors(dragPoints);
+  // Calculate what the connectors would be at this position
+  const testDragPoints = R.update(dragPointIndex, newDragPoint, origDragPoints);
+  const testConnectors = Component.transform.getConnectors(testDragPoints);
+
+  // Find nearest connector from other components to snap to
+  const nearestConnector = findNearestConnectorToPoint(testConnectors[dragPointIndex], views, id);
+
+  // If we found a nearby connector, adjust the drag point to align with it
+  let finalDragPoints = testDragPoints;
+  if (nearestConnector.position) {
+    const snapPoint = nearestConnector.position;
+    const offset = snapPoint.subtract(testConnectors[dragPointIndex]);
+    finalDragPoints = R.update(dragPointIndex, newDragPoint.add(offset), origDragPoints);
+  }
+
+  // Calculate final connector positions
+  const tConnectors = Component.transform.getTransformedConnectors(finalDragPoints);
+  const connectors = Component.transform.getConnectors(finalDragPoints);
 
   return {
     ...views,
     [id]: {
       ...view,
-      dragPoints,
+      dragPoints: finalDragPoints,
       tConnectors,
       connectors
     }
@@ -58,20 +79,38 @@ function moveSingleDragPoint(views, action) {
 function moveWholeComponent(views, action) {
   const { id, from, origDragPoints } = action.movingComponent;
 
-  const view = views[id],
-        Component = Components[view.typeID],
+  const view = views[id];
+  const Component = Components[view.typeID];
 
-        diffVector = diff(from, action.mouseVector),
-        dragPoints = R.map(v => snapToGrid(v.subtract(diffVector)), origDragPoints),
+  // Calculate raw movement
+  const diffVector = diff(from, action.mouseVector);
+  const testDragPoints = R.map(v => snapToGrid(v.subtract(diffVector)), origDragPoints);
+  
+  // Calculate what the connectors would be at this position
+  const testConnectors = Component.transform.getConnectors(testDragPoints);
+  
+  // Find nearest connector from other components to snap to
+  let finalDragPoints = testDragPoints;
+  for (let i = 0; i < testConnectors.length; i++) {
+    const nearestConnector = findNearestConnectorToPoint(testConnectors[i], views, id);
+    if (nearestConnector.position) {
+      // If we found a connector to snap to, adjust the whole component
+      const snapPoint = nearestConnector.position;
+      const offset = snapPoint.subtract(testConnectors[i]);
+      finalDragPoints = R.map(dp => dp.add(offset), finalDragPoints);
+      break; // Only snap to one connector
+    }
+  }
 
-        tConnectors = Component.transform.getTransformedConnectors(dragPoints),
-        connectors = Component.transform.getConnectors(dragPoints);
+  // Calculate final connector positions
+  const tConnectors = Component.transform.getTransformedConnectors(finalDragPoints);
+  const connectors = Component.transform.getConnectors(finalDragPoints);
 
   return {
     ...views,
     [id]: {
       ...view,
-      dragPoints,
+      dragPoints: finalDragPoints,
       tConnectors,
       connectors
     }
