@@ -137,12 +137,11 @@ export default {
     }
   },
 
-  getCurrents: (props, state) => {
-    const {
-      currents = [0]
-    } = state;
-
-    return currents;
+  getCurrents: (state) => {
+    if (!state || !state.currents) {
+      return Array(2).fill(0);  // Return default currents if state is undefined
+    }
+    return state.currents;
   },
 
   renderCurrent: (props, state, renderBetween) => {

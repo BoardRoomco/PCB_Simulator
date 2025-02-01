@@ -1,9 +1,10 @@
-import {Arrays as Matrixy} from 'matrixy';
-import assert from 'assert';
+const { Arrays: Matrixy } = require('matrixy');
+const assert = require('assert');
+const { FsolveSolver } = require('./FsolveSolver');
 
 const MIN_NUM_OF_NODES = 2;
 
-export const createBlankEquation = ({numOfNodes, numOfVSources}) => {
+const createBlankEquation = ({numOfNodes, numOfVSources}) => {
   assert(numOfNodes >= MIN_NUM_OF_NODES, `Number of nodes must be >= ${MIN_NUM_OF_NODES}, was: ${numOfNodes}`);
 
   const size = numOfNodes + numOfVSources - 1;
@@ -16,7 +17,7 @@ export const createBlankEquation = ({numOfNodes, numOfVSources}) => {
   };
 };
 
-export const clone = equation => {
+const clone = equation => {
   return {
     numOfVSourcesStamped: equation.numOfVSourcesStamped,
     numOfVSources: equation.numOfVSources,
@@ -26,11 +27,13 @@ export const clone = equation => {
   };
 };
 
-export const solve = equation => Matrixy.solve(equation.nodalAdmittances, equation.inputs);
+const solver = new FsolveSolver(1e-6, 100);
+const solve = equation => solver.solve(equation);
 
 // NOTE: All functions below mutate the equation.
 
-const stampNodalAdmittanceMatrix = equation => (row, col, x) => {
+const 
+stampNodalAdmittanceMatrix = equation => (row, col, x) => {
   if (row !== 0 && col !== 0) { // ignore ground node
     row--;
     col--;
@@ -45,21 +48,21 @@ const stampInputVector = equation => (row, x) => {
   }
 };
 
-export const stampConductance = equation => (conductance, node1, node2) => {
+const stampConductance = equation => (conductance, node1, node2) => {
   stampNodalAdmittanceMatrix(equation)(node1, node1, conductance);
   stampNodalAdmittanceMatrix(equation)(node2, node2, conductance);
   stampNodalAdmittanceMatrix(equation)(node1, node2, -conductance);
   stampNodalAdmittanceMatrix(equation)(node2, node1, -conductance);
 };
 
-export const stampResistor = equation => (resistance, node1, node2) => {
+const stampResistor = equation => (resistance, node1, node2) => {
   assert(resistance > 0, 'Resistance must be > 0, was: ' + resistance);
 
   const conductance = 1 / resistance;
   stampConductance(equation)(conductance, node1, node2);
 };
 
-export const stampVoltageSource = equation => (voltage, fromNode, toNode, vNum) => {
+const stampVoltageSource = equation => (voltage, fromNode, toNode, vNum) => {
   const {numOfVSources, numOfVSourcesStamped} = equation;
   assert(numOfVSourcesStamped < numOfVSources, `Already stamped declared number of voltage sources (${numOfVSources})`);
 
@@ -73,12 +76,12 @@ export const stampVoltageSource = equation => (voltage, fromNode, toNode, vNum) 
   return vIndex;
 };
 
-export const stampCurrentSource = equation => (current, fromNode, toNode) => {
+const stampCurrentSource = equation => (current, fromNode, toNode) => {
   stampInputVector(equation)(fromNode, -current);
   stampInputVector(equation)(toNode, current);
 };
 
-export const stampVCVS = equation => (gain, outNode1, outNode2, inNode1, inNode2, vNum) => {
+const stampVCVS = equation => (gain, outNode1, outNode2, inNode1, inNode2, vNum) => {
   const {numOfVSources, numOfVSourcesStamped} = equation;
   assert(numOfVSourcesStamped < numOfVSources, `Already stamped declared number of voltage sources (${numOfVSources})`);
 
@@ -94,4 +97,15 @@ export const stampVCVS = equation => (gain, outNode1, outNode2, inNode1, inNode2
   // Stamp the controlling voltage
   stampNodalAdmittanceMatrix(equation)(vIndex, inNode1, -gain);
   stampNodalAdmittanceMatrix(equation)(vIndex, inNode2, gain);
+};
+
+module.exports = {
+  createBlankEquation,
+  clone,
+  solve,
+  stampConductance,
+  stampResistor,
+  stampVoltageSource,
+  stampCurrentSource,
+  stampVCVS
 };

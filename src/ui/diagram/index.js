@@ -22,6 +22,7 @@ import resize from '../Resize';
 import {relMouseCoords} from '../utils/DrawingUtils';
 import createLoop from './loop';
 import createRender from './render';
+import SimulationControl from './SimulationControl';
 
 const SNAP_DISTANCE = 20; // Distance in pixels to snap to connectors
 
@@ -219,28 +220,31 @@ class CircuitDiagram extends React.Component {
     const { width, height } = this.props;
     const { store } = this.context;
     return (
-      <canvas
-        ref={c => (this.canvas = c)}
-        width={width}
-        height={height}
-        style={{
-          padding: 0,
-          margin: 0,
-          border: 0,
-          display: 'block',
-          backgroundColor: this.context.theme.COLORS.canvasBackground
-        }}
-        tabIndex={0}
-        onMouseDown={this.onMouse}
-        onMouseMove={this.onMouse}
-        onMouseUp={this.onMouse}
-        onMouseEnter={() => store.dispatch(canvasMouseEnter())}
-        onMouseLeave={() => store.dispatch(canvasMouseLeave())}
-        onTouchStart={this.onMouse}
-        onTouchMove={this.onMouse}
-        onTouchEnd={this.onMouse}
-        onTouchCancel={this.onMouse}
-      />
+      <div>
+        <SimulationControl />
+        <canvas
+          ref={c => (this.canvas = c)}
+          width={width}
+          height={height}
+          style={{
+            padding: 0,
+            margin: 0,
+            border: 0,
+            display: 'block',
+            backgroundColor: this.context.theme.COLORS.canvasBackground
+          }}
+          tabIndex={0}
+          onMouseDown={this.onMouse}
+          onMouseMove={this.onMouse}
+          onMouseUp={this.onMouse}
+          onMouseEnter={() => store.dispatch(canvasMouseEnter())}
+          onMouseLeave={() => store.dispatch(canvasMouseLeave())}
+          onTouchStart={this.onMouse}
+          onTouchMove={this.onMouse}
+          onTouchEnd={this.onMouse}
+          onTouchCancel={this.onMouse}
+        />
+      </div>
     );
   }
 }

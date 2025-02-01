@@ -32,60 +32,43 @@ import {
 
 const INITIAL_STATE = {
   circuitGraph: {
-
-    // models: {
-    //   id: {
-    //     typeID,
-    //     nodes: [nodeIDs]
-    //   }
-    // }
     models: {},
-
-    // nodes: [ // node ID is index in this array
-    //   [ // array of models connected to this node
-    //     {
-    //       viewID, // maybe modelID would be better?
-    //       index
-    //     }
-    //   ]
-    // ]
     nodes: [],
-
     numOfNodes: 0,
     numOfVSources: 0
   },
-
-  // previousCircuitState
-  // {
-  //  id: {
-  //    voltages: []
-  //    currents: []
-  //  }
-  // }
   components: {},
-
   staticEquation: null,
-
   ...createVolts2RGB(1, 1),
-
   circuitChanged: false,
-  error: false, // string | false
-
+  error: false,
   remainingDelta: 0,
   simTime: 0,
-
   timestep: 5e-6,
-  simTimePerSec: 1 / 1000 // Run the simulation 1000x slower than reality
+  simTimePerSec: 1 / 1000,
+  isSimulationRunning: false
 };
+
+// Initialize a component with default values
+const initializeComponent = (model) => ({
+  voltages: Array(model.nodes.length).fill(0),
+  currents: Array(model.nodes.length).fill(0)
+});
 
 const zeroed = (circuit, error) => {
   const { circuitGraph } = circuit;
   const solution = blankSolutionForCircuit(circuitGraph);
   const blankCircuitState = getCircuitState(circuitGraph, solution);
 
+  // Initialize all components with default values
+  const initializedComponents = Object.keys(circuitGraph.models).reduce((acc, id) => {
+    acc[id] = initializeComponent(circuitGraph.models[id]);
+    return acc;
+  }, {});
+
   return {
     ...circuit,
-    components: blankCircuitState,
+    components: initializedComponents,
     remainingDelta: 0,
     error: error || circuit.error
   };
@@ -100,6 +83,21 @@ const zeroed = (circuit, error) => {
 //  (except possibly in response to stablity issues)
 // Time to be simulated per second should be user-controllable to view high- or low-frequency circuits
 // Current timestep should be user-controllable to view high- or low-current circuits
+
+export const START_SIMULATION = 'START_SIMULATION';
+export const STOP_SIMULATION = 'STOP_SIMULATION';
+
+export function startSimulation() {
+  return {
+    type: START_SIMULATION
+  };
+}
+
+export function stopSimulation() {
+  return {
+    type: STOP_SIMULATION
+  };
+}
 
 export default function mainLoopReducer(circuit = INITIAL_STATE, action) {
   switch (action.type) {
@@ -117,7 +115,6 @@ export default function mainLoopReducer(circuit = INITIAL_STATE, action) {
     }
 
     if (circuit.circuitChanged) {
-      // create a graph of the circuit that we can use to analyse
       const nodes = toNodes(views);
       const models = setVoltSrcNums(setNodesInModels(toModels(views), nodes));
       const circuitMeta = getCircuitInfo({models, nodes});
@@ -128,7 +125,7 @@ export default function mainLoopReducer(circuit = INITIAL_STATE, action) {
       };
 
       const error = checkForProblems(circuitGraph);
-      if (error) { console.warn(error); } // eslint-disable-line no-console
+      if (error) { console.warn(error); }
 
       let staticEquation = null;
       if (!error) {
@@ -136,10 +133,17 @@ export default function mainLoopReducer(circuit = INITIAL_STATE, action) {
         connectDisconnectedCircuits(circuitGraph, staticEquation);
       }
 
+      // Initialize components with default values
+      const initializedComponents = Object.keys(models).reduce((acc, id) => {
+        acc[id] = initializeComponent(models[id]);
+        return acc;
+      }, {});
+
       return {
         ...circuit,
         circuitGraph,
         staticEquation,
+        components: initializedComponents,
         circuitChanged: false,
         error
       };
@@ -151,6 +155,10 @@ export default function mainLoopReducer(circuit = INITIAL_STATE, action) {
   case LOOP_UPDATE: {
     if (circuit.error) {
       return zeroed(circuit);
+    }
+
+    if (!circuit.isSimulationRunning) {
+      return circuit;
     }
 
     const {
@@ -245,6 +253,18 @@ export default function mainLoopReducer(circuit = INITIAL_STATE, action) {
     return {
       ...circuit,
       circuitChanged: true
+    };
+
+  case START_SIMULATION:
+    return {
+      ...circuit,
+      isSimulationRunning: true
+    };
+  
+  case STOP_SIMULATION:
+    return {
+      ...circuit,
+      isSimulationRunning: false
     };
 
   default:
