@@ -96,11 +96,19 @@ export default {
       const mid = midPoint(dp1, dp2);
       const dir = dp2.subtract(dp1).normalize();
       const perp = new Vector(-dir.y, dir.x);
+      const horz = new Vector(dir.x, dir.y);
       
-      // Use same offsets as getTransformedConnectors
+      let half = length(dragPoints) / 2;
+      half = Math.round(half);
+      const horzOffset = half * 1.5;
+      
+      // Calculate points in real space by:
+      // 1. Moving to midpoint
+      // 2. Moving along direction vector by horzOffset
+      // 3. Moving perpendicular by ±9
       return [
-        mid.add(perp.multiply(9)),
-        mid.add(perp.multiply(-9))
+        mid.add(horz.multiply(horzOffset)).add(perp.multiply(9)),
+        mid.add(horz.multiply(horzOffset)).add(perp.multiply(-9))
       ];
     }
   },
