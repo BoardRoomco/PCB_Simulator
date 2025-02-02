@@ -203,6 +203,55 @@ const stampVCVS = equation => (gain, outNode1, outNode2, inNode1, inNode2, vNum)
   stampNodalAdmittanceMatrix(equation)(vIndex, inNode2, gain);
 };
 
+const stampMOSFET = equation => (type, drain, gate, source, bulk, params) => {
+  const {
+    W = 10e-6,    // Width in meters
+    L = 1e-6,     // Length in meters
+    Cox = 2e-3,   // Gate oxide capacitance F/m²
+    μn = 0.06,    // Carrier mobility m²/(V·s)
+    Vth = 0.7,    // Threshold voltage
+    λ = 0.01      // Channel length modulation
+  } = params;
+
+  // Calculate transconductance factor
+  const K = μn * Cox * (W/L);
+
+  // Get node voltages
+  const Vgs = gate - source;
+  const Vds = drain - source;
+  const Vbs = bulk - source;
+
+  // Determine operating region and calculate currents/conductances
+  if (Vgs <= Vth) {
+    // Cutoff region - minimal leakage current
+    const Ileak = 1e-12;
+    stampCurrentSource(equation)(Ileak, drain, source);
+  } 
+  else if (Vds < (Vgs - Vth)) {
+    // Linear/Triode region
+    const Id = K * ((Vgs - Vth) * Vds - Vds * Vds / 2);
+    const gds = K * (Vgs - Vth - Vds);
+    stampCurrentSource(equation)(Id, drain, source);
+    stampConductance(equation)(gds, drain, source);
+  } 
+  else {
+    // Saturation region
+    const Id = (K/2) * Math.pow(Vgs - Vth, 2) * (1 + λ * Vds);
+    const gds = λ * (K/2) * Math.pow(Vgs - Vth, 2);
+    stampCurrentSource(equation)(Id, drain, source);
+    stampConductance(equation)(gds, drain, source);
+  }
+
+  // Add parasitic capacitances
+  const Cgs = (2/3) * W * L * Cox;  // Gate-source capacitance
+  const Cgd = (2/3) * W * L * Cox;  // Gate-drain capacitance
+  const Cbs = 0.1 * Cgs;            // Bulk-source capacitance
+  
+  stampConductance(equation)(Cgs/1e9, gate, source);  // Divide by 1e9 to convert to conductance
+  stampConductance(equation)(Cgd/1e9, gate, drain);
+  stampConductance(equation)(Cbs/1e9, bulk, source);
+};
+
 module.exports = {
   createBlankEquation,
   clone,
@@ -211,5 +260,6 @@ module.exports = {
   stampResistor,
   stampVoltageSource,
   stampCurrentSource,
-  stampVCVS
+  stampVCVS,
+  stampMOSFET
 };

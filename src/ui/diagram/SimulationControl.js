@@ -2,18 +2,41 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { startSimulation, stopSimulation } from '../../state/reducers/mainLoop';
 
-const SimulationControl = ({ isSimulationRunning, startSimulation, stopSimulation }) => {
-  return (
-    <div style={styles.container}>
-      <button 
-        onClick={isSimulationRunning ? stopSimulation : startSimulation}
-        style={styles.button}
-      >
-        {isSimulationRunning ? 'Stop Simulation' : 'Start Simulation'}
-      </button>
-    </div>
-  );
-};
+class SimulationControl extends React.Component {
+  componentDidUpdate(prevProps) {
+    if (!prevProps.isSimulationRunning && this.props.isSimulationRunning) {
+      // Start timer when simulation starts
+      this.timer = setTimeout(() => {
+        this.props.stopSimulation();
+      }, 2000); // 2 seconds
+    } else if (prevProps.isSimulationRunning && !this.props.isSimulationRunning) {
+      // Clear timer when simulation stops
+      if (this.timer) {
+        clearTimeout(this.timer);
+      }
+    }
+  }
+
+  componentWillUnmount() {
+    if (this.timer) {
+      clearTimeout(this.timer);
+    }
+  }
+
+  render() {
+    const { isSimulationRunning, startSimulation, stopSimulation } = this.props;
+    return (
+      <div style={styles.container}>
+        <button 
+          onClick={isSimulationRunning ? stopSimulation : startSimulation}
+          style={styles.button}
+        >
+          {isSimulationRunning ? 'Stop Simulation' : 'Start Simulation'}
+        </button>
+      </div>
+    );
+  }
+}
 
 const styles = {
   container: {

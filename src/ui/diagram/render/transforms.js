@@ -150,6 +150,36 @@ export default {
       ];
     }
   },
+  "3-mosfet": {  // Transform for MOSFETs
+    transformCanvas: centerMid,
+    getTransformedConnectors(dragPoints) {
+      let half = length(dragPoints) / 2;
+      half = Math.round(half);
+      // Position connectors to start at the pins
+      return [
+        {x: -half/3, y: -8},    // Drain (starts at left top pin)
+        {x: half/3, y: 0},      // Gate (starts at right pin)
+        {x: -half/3, y: 8}      // Source (starts at left bottom pin)
+      ];
+    },
+    getConnectors(dragPoints) {
+      const [dp1, dp2] = dragPoints;
+      const mid = midPoint(dp1, dp2);
+      const dir = dp2.subtract(dp1).normalize();
+      const perp = new Vector(-dir.y, dir.x);
+      const horz = new Vector(dir.x, dir.y);
+      
+      let half = length(dragPoints) / 2;
+      half = Math.round(half);
+      
+      // Calculate points in real space matching the transformed coordinates
+      return [
+        mid.add(horz.multiply(-half/3)).add(perp.multiply(-8)),  // Drain
+        mid.add(horz.multiply(half/3)),                          // Gate
+        mid.add(horz.multiply(-half/3)).add(perp.multiply(8))    // Source
+      ];
+    }
+  },
   identity: {
     transformCanvas: (ctx, props, render) => { render(props); },
     getTransformedConnectors: R.identity,

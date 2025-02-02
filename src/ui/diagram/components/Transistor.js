@@ -13,36 +13,53 @@ const BOUNDING_BOX_WIDTH = TRANSISTOR.WIDTH + BOUNDING_BOX_PADDING * 2;
 const MIN_LENGTH = TRANSISTOR_LENGTH + GRID_SIZE;
 
 const BaseTransistorModel = BaseData.Transistor;
-const DEFAULT_CAPACITANCE = 1e-6;
-const NUM_OF_CONNECTORS = 2;
+const NUM_OF_CONNECTORS = 3;
+const CONNECTOR_COLORS = ['#4B0082', '#4B0082', '#4B0082']; // Purple for all connectors
 const WIRE_COLOR = '#90EE90';
 
 const transistorImage = new Image();
-transistorImage.src = '/icons/transistor.png';
+transistorImage.src = '/icons/mosfet.png';
 
 export default {
   typeID: BaseTransistorModel.typeID,
 
-  numOfVoltages: 2,
-  numOfCurrentPaths: 1,
+  numOfVoltages: 3,
+  numOfCurrentPaths: 2,
   numOfConnectors: NUM_OF_CONNECTORS,
 
   width: BOUNDING_BOX_WIDTH,
   editablesSchema: {
-    capacitance: {
+    type: {
+      type: 'type-select',
+      options: {
+        NMOS: [],
+        PMOS: []
+      }
+    },
+    W: {
       type: 'number',
-      unit: 'F'
+      unit: 'μm'
+    },
+    L: {
+      type: 'number',
+      unit: 'μm'
     }
   },
   defaultEditables: {
-    capacitance: {
-      value: DEFAULT_CAPACITANCE
+    type: {
+      value: 'NMOS'
+    },
+    W: {
+      value: 10
+    },
+    L: {
+      value: 1
     }
   },
-  labelWith: 'capacitance',
+  labelWith: 'type',
 
   dragPoint: getDragFunctionFor(MIN_LENGTH),
-  transform: transforms[NUM_OF_CONNECTORS],
+  transform: transforms["3-mosfet"],
 
   getBoundingBox: get2PointBoundingBox(BOUNDING_BOX_WIDTH),
 
@@ -51,7 +68,8 @@ export default {
       tConnectors,
       colors,
       voltages = [],
-      dragPointIndex
+      connectorIndex,
+      editables = {}
     } = props;
 
     if (!tConnectors || !colors) {
@@ -59,95 +77,127 @@ export default {
       return;
     }
 
-    const [c1, c2] = tConnectors;
+    const [drain, gate, source] = tConnectors;
+    const scale = 0.4;
+    const symbolWidth = TRANSISTOR_LENGTH * 4 * scale;
+    const symbolHeight = symbolWidth * 1.2;
 
     if (transistorImage.complete) {
-      const scale = 0.4;
-      const imageWidth = TRANSISTOR_LENGTH * 4 * scale;
-      const imageHeight = imageWidth * 1.2;
+      const imageWidth = symbolWidth * 2;
+      const imageHeight = symbolHeight * 2;
 
-      // Draw the image first
       ctx.drawImage(
         transistorImage,
-        -imageWidth / 2,
-        -imageHeight / 2,
+        -imageWidth/2,
+        -imageHeight/2,
         imageWidth,
         imageHeight
       );
-
-      // Draw connecting wires
-      ctx.beginPath();
-      ctx.strokeStyle = WIRE_COLOR;
-      ctx.lineWidth = 0.1;
-      ctx.moveTo(c1.x, 0);
-      ctx.lineTo(-imageWidth / 2, 0);
-      ctx.stroke();
-
-      ctx.beginPath();
-      ctx.strokeStyle = WIRE_COLOR;
-      ctx.lineWidth = 0.1;
-      ctx.moveTo(c2.x, 0);
-      ctx.lineTo(imageWidth / 2, 0);
-      ctx.stroke();
     } else {
-      // Draw transistor symbol (fallback if image not loaded)
+      // Draw gate line (vertical)
       ctx.beginPath();
       ctx.strokeStyle = colors[0];
-      
-      // Draw vertical line (base)
-      ctx.moveTo(-TRANSISTOR_LENGTH/2, -TRANSISTOR.WIDTH/2);
-      ctx.lineTo(-TRANSISTOR_LENGTH/2, TRANSISTOR.WIDTH/2);
+      ctx.lineWidth = 2;
+      ctx.moveTo(0, -symbolHeight/2);
+      ctx.lineTo(0, symbolHeight/2);
       ctx.stroke();
 
-      // Draw emitter and collector lines
+      // Draw drain-source channel (horizontal)
       ctx.beginPath();
-      ctx.moveTo(-TRANSISTOR_LENGTH/4, -TRANSISTOR.WIDTH/2);
-      ctx.lineTo(TRANSISTOR_LENGTH/2, -TRANSISTOR.WIDTH/4);
-      ctx.moveTo(-TRANSISTOR_LENGTH/4, TRANSISTOR.WIDTH/2);
-      ctx.lineTo(TRANSISTOR_LENGTH/2, TRANSISTOR.WIDTH/4);
+      ctx.moveTo(0, -symbolHeight/3);
+      ctx.lineTo(symbolWidth/2, -symbolHeight/3);
+      ctx.moveTo(0, symbolHeight/3);
+      ctx.lineTo(symbolWidth/2, symbolHeight/3);
       ctx.stroke();
 
-      // Draw arrow
+      // Draw source terminal
       ctx.beginPath();
-      const arrowSize = TRANSISTOR.WIDTH/4;
-      ctx.moveTo(TRANSISTOR_LENGTH/4, 0);
-      ctx.lineTo(TRANSISTOR_LENGTH/4 - arrowSize, arrowSize);
-      ctx.lineTo(TRANSISTOR_LENGTH/4 - arrowSize, -arrowSize);
-      ctx.closePath();
-      ctx.fill();
+      ctx.moveTo(symbolWidth/2, -symbolHeight/3);
+      ctx.lineTo(symbolWidth/2, symbolHeight/3);
+      ctx.stroke();
+
+      // Draw gate arrow (for NMOS) or circle (for PMOS)
+      const isNMOS = editables.type && editables.type.value === 'NMOS';
+      if (isNMOS) {
+        // Draw arrow pointing in
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.lineTo(symbolWidth/4, -symbolHeight/6);
+        ctx.lineTo(symbolWidth/4, symbolHeight/6);
+        ctx.closePath();
+        ctx.fillStyle = colors[0];
+        ctx.fill();
+      } else {
+        // Draw circle for PMOS
+        ctx.beginPath();
+        ctx.arc(symbolWidth/4, 0, symbolHeight/6, 0, Math.PI * 2);
+        ctx.stroke();
+      }
     }
 
-    if (dragPointIndex !== undefined && dragPointIndex !== false && voltages[dragPointIndex] !== undefined) {
+    // Draw connecting wires with thinner lines
+    ctx.lineWidth = 0.1;
+    ctx.strokeStyle = WIRE_COLOR;
+
+    // Draw connecting wires to match the pins in the image
+    // Gate connection (right pin)
+    ctx.beginPath();
+    ctx.moveTo(symbolWidth/3, 0);          // Start at right pin
+    ctx.lineTo(gate.x, gate.y);            // End at purple connector
+    ctx.stroke();
+
+    // Drain connection (left top pin)
+    ctx.beginPath();
+    ctx.moveTo(-symbolWidth/3, -8);        // Start at left top pin, increased spacing
+    ctx.lineTo(drain.x, drain.y);          // End at purple connector
+    ctx.stroke();
+
+    // Source connection (left bottom pin)
+    ctx.beginPath();
+    ctx.moveTo(-symbolWidth/3, 8);         // Start at left bottom pin, increased spacing
+    ctx.lineTo(source.x, source.y);        // End at purple connector
+    ctx.stroke();
+
+    // Draw connector points (purple circles)
+    const connectorRadius = 3;
+    tConnectors.forEach((connector, i) => {
+      ctx.beginPath();
+      ctx.strokeStyle = CONNECTOR_COLORS[i];
+      ctx.fillStyle = CONNECTOR_COLORS[i];
+      ctx.arc(connector.x, connector.y, connectorRadius, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+    });
+
+    // Show voltage for hovered connector
+    if (connectorIndex !== undefined && connectorIndex !== false && voltages[connectorIndex] !== undefined) {
       ctx.fillStyle = 'black';
       ctx.font = '12px Arial';
-      const voltage = voltages[dragPointIndex];
-      const connector = tConnectors[dragPointIndex];
-      ctx.fillText(`${voltage.toFixed(2)}V`, connector.x, 15);
+      const voltage = voltages[connectorIndex];
+      const connector = tConnectors[connectorIndex];
+      const label = ['D', 'G', 'S'][connectorIndex];
+      ctx.fillText(`${label}: ${voltage.toFixed(2)}V`, connector.x - 20, connector.y - 10);
     }
   },
 
   getCurrents: (props, state) => {
     const {
-      editables: {
-        capacitance: {
-          value: capacitance = DEFAULT_CAPACITANCE
-        }
-      }
-    } = props;
-
-    const {
-      voltages: [v0, v1] = [0, 0],
-      current = 0
+      voltages: [vd, vg, vs] = [0, 0, 0],
+      currents = [0, 0]
     } = state;
 
-    return [current];
+    return currents;
   },
 
   renderCurrent: (props, state, renderBetween) => {
     const {
-      tConnectors: [c1, c2],
-      currentOffsets: [offset]
+      tConnectors: [drain, gate, source],
+      currentOffsets: [drainOffset, gateOffset]
     } = props;
-    renderBetween(c1, c2, offset);
+    
+    // Render drain-source current
+    renderBetween(drain, source, drainOffset);
+    // Render gate current
+    renderBetween(gate, source, gateOffset);
   }
 }; 

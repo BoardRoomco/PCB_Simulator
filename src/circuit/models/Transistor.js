@@ -1,4 +1,18 @@
-import {stampConductance, stampCurrentSource} from '../equation';
+import {stampConductance, stampCurrentSource, stampMOSFET} from '../equation';
+
+const MOSFET_TYPE = {
+  NMOS: 'nmos',
+  PMOS: 'pmos'
+};
+
+const DEFAULT_MOSFET_PARAMS = {
+  W: 10e-6,     // Width in meters
+  L: 1e-6,      // Length in meters
+  Cox: 2e-3,    // Gate oxide capacitance F/m²
+  μn: 0.06,     // Carrier mobility m²/(V·s)
+  Vth: 0.7,     // Threshold voltage
+  λ: 0.01       // Channel length modulation
+};
 
 const COMPANION_MODEL_TYPE = {
   // Current source in parallel with a resistor
@@ -59,9 +73,22 @@ const INTEGRATION_METHOD = {
 export default {
   data: {
     nodes: [],
-    ...COMPANION_MODEL_TYPE.NORTON
+    type: MOSFET_TYPE.NMOS,
+    params: DEFAULT_MOSFET_PARAMS
   },
   functions: {
-    ...INTEGRATION_METHOD.TRAPEZOIDAL
+    stamp: (data, equation) => {
+      const {
+        nodes: [drain, gate, source],  // Only 3 nodes provided from UI
+        type,
+        params
+      } = data;
+
+      // Use source node as bulk node by default
+      const bulk = source;  
+
+      // Stamp the MOSFET using the equation module's stampMOSFET function
+      stampMOSFET(equation)(type, drain, gate, source, bulk, params);
+    }
   }
 }; 
