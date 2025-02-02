@@ -1,8 +1,14 @@
 import { LINE_WIDTH } from '../Constants';
 
-// Constants for probe appearance
+// Constants for probe appearance and multimeter body
 const PROBE_RADIUS = 5;
 const LEAD_LENGTH = 50;
+const DISPLAY_WIDTH = 120;
+const DISPLAY_HEIGHT = 80;
+const DISPLAY_BORDER = 4;
+const MULTIMETER_WIDTH = 160;
+const MULTIMETER_HEIGHT = 200;
+const MULTIMETER_RADIUS = 10;
 
 // Initial state for the multimeter
 export const initialMultimeterState = {
@@ -24,69 +30,124 @@ export const initialMultimeterState = {
 
 // Render function for the multimeter
 export const renderMultimeter = ({ctx, theme, multimeter}) => {
-  if (!multimeter || !multimeter.active) return;
+  console.log('Rendering multimeter, state:', multimeter);
+  if (!multimeter || !multimeter.active) {
+    console.log('Multimeter not active or undefined');
+    return;
+  }
 
   const { redProbe, blackProbe } = multimeter.probes;
+  console.log('Drawing probes at:', { redProbe, blackProbe });
   
   ctx.save();
   ctx.lineWidth = LINE_WIDTH;
 
-  // Draw red probe
+  // Draw multimeter body
+  const multimeterX = 50;  // Fixed position for multimeter body
+  const multimeterY = 50;
+
+  // Draw main body (rounded rectangle)
+  ctx.fillStyle = '#8B8B00';  // Dark yellow for multimeter body
+  ctx.beginPath();
+  ctx.moveTo(multimeterX + MULTIMETER_RADIUS, multimeterY);
+  ctx.lineTo(multimeterX + MULTIMETER_WIDTH - MULTIMETER_RADIUS, multimeterY);
+  ctx.arcTo(multimeterX + MULTIMETER_WIDTH, multimeterY, multimeterX + MULTIMETER_WIDTH, multimeterY + MULTIMETER_RADIUS, MULTIMETER_RADIUS);
+  ctx.lineTo(multimeterX + MULTIMETER_WIDTH, multimeterY + MULTIMETER_HEIGHT - MULTIMETER_RADIUS);
+  ctx.arcTo(multimeterX + MULTIMETER_WIDTH, multimeterY + MULTIMETER_HEIGHT, multimeterX + MULTIMETER_WIDTH - MULTIMETER_RADIUS, multimeterY + MULTIMETER_HEIGHT, MULTIMETER_RADIUS);
+  ctx.lineTo(multimeterX + MULTIMETER_RADIUS, multimeterY + MULTIMETER_HEIGHT);
+  ctx.arcTo(multimeterX, multimeterY + MULTIMETER_HEIGHT, multimeterX, multimeterY + MULTIMETER_HEIGHT - MULTIMETER_RADIUS, MULTIMETER_RADIUS);
+  ctx.lineTo(multimeterX, multimeterY + MULTIMETER_RADIUS);
+  ctx.arcTo(multimeterX, multimeterY, multimeterX + MULTIMETER_RADIUS, multimeterY, MULTIMETER_RADIUS);
+  ctx.closePath();
+  ctx.fill();
+
+  // Draw display screen
+  const screenX = multimeterX + (MULTIMETER_WIDTH - DISPLAY_WIDTH) / 2;
+  const screenY = multimeterY + 20;
+  
+  // Screen border
+  ctx.fillStyle = '#8B8B00';  // Dark yellow background
+  ctx.fillRect(
+    screenX - DISPLAY_BORDER,
+    screenY - DISPLAY_BORDER,
+    DISPLAY_WIDTH + DISPLAY_BORDER * 2,
+    DISPLAY_HEIGHT + DISPLAY_BORDER * 2
+  );
+  
+  // Screen background
+  ctx.fillStyle = '#90EE90';  // Light green LCD screen
+  ctx.fillRect(
+    screenX,
+    screenY,
+    DISPLAY_WIDTH,
+    DISPLAY_HEIGHT
+  );
+
+  // Draw measurement if we have a value
+  if (multimeter.measurement && multimeter.measurement.value !== null) {
+    const text = `${multimeter.measurement.value.toFixed(2)}${multimeter.measurement.unit}`;
+    ctx.fillStyle = '#000000';  // Black text
+    ctx.font = 'bold 24px monospace';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(text, screenX + DISPLAY_WIDTH/2, screenY + DISPLAY_HEIGHT/2);
+    
+    // Draw mode indicator
+    ctx.font = '14px monospace';
+    ctx.fillText(multimeter.mode.toUpperCase(), screenX + DISPLAY_WIDTH/2, screenY + 20);
+  }
+
+  // Draw mode selector dial (circle with pointer)
+  const dialX = multimeterX + MULTIMETER_WIDTH/2;
+  const dialY = multimeterY + MULTIMETER_HEIGHT - 50;
+  const dialRadius = 30;
+  
+  ctx.beginPath();
+  ctx.fillStyle = '#666666';
+  ctx.arc(dialX, dialY, dialRadius, 0, Math.PI * 2);
+  ctx.fill();
+  
+  // Dial pointer
+  const angle = multimeter.mode === 'voltage' ? 0 : multimeter.mode === 'current' ? Math.PI/3 : 2*Math.PI/3;
+  ctx.beginPath();
+  ctx.strokeStyle = '#FFFFFF';
+  ctx.lineWidth = 3;
+  ctx.moveTo(dialX, dialY);
+  ctx.lineTo(
+    dialX + Math.cos(angle) * (dialRadius - 5),
+    dialY + Math.sin(angle) * (dialRadius - 5)
+  );
+  ctx.stroke();
+
+  // Draw probe leads (thicker wires from multimeter to probes)
+  ctx.beginPath();
+  ctx.strokeStyle = 'red';
+  ctx.lineWidth = 3;
+  ctx.moveTo(multimeterX + 20, multimeterY + MULTIMETER_HEIGHT);  // Red probe socket
+  ctx.lineTo(redProbe.x, redProbe.y);
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.strokeStyle = 'black';
+  ctx.lineWidth = 3;
+  ctx.moveTo(multimeterX + MULTIMETER_WIDTH - 20, multimeterY + MULTIMETER_HEIGHT);  // Black probe socket
+  ctx.lineTo(blackProbe.x, blackProbe.y);
+  ctx.stroke();
+
+  // Draw probe tips
+  // Red probe
   ctx.beginPath();
   ctx.fillStyle = theme.voltageColor || 'red';
   ctx.strokeStyle = theme.voltageColor || 'red';
-  // Probe tip
   ctx.arc(redProbe.x, redProbe.y, PROBE_RADIUS, 0, Math.PI * 2);
   ctx.fill();
-  // Probe lead
-  ctx.beginPath();
-  ctx.moveTo(redProbe.x, redProbe.y);
-  ctx.lineTo(redProbe.x, redProbe.y + LEAD_LENGTH);
-  ctx.stroke();
 
-  // Draw black probe
+  // Black probe
   ctx.beginPath();
   ctx.fillStyle = theme.groundColor || 'black';
   ctx.strokeStyle = theme.groundColor || 'black';
-  // Probe tip
   ctx.arc(blackProbe.x, blackProbe.y, PROBE_RADIUS, 0, Math.PI * 2);
   ctx.fill();
-  // Probe lead
-  ctx.beginPath();
-  ctx.moveTo(blackProbe.x, blackProbe.y);
-  ctx.lineTo(blackProbe.x, blackProbe.y + LEAD_LENGTH);
-  ctx.stroke();
-
-  // Draw measurement display if we have a value
-  if (multimeter.measurement && multimeter.measurement.value !== null) {
-    ctx.save();
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
-    ctx.strokeStyle = '#00ff00';
-    ctx.font = '16px monospace';
-    
-    // Position the display between the probes
-    const displayX = (redProbe.x + blackProbe.x) / 2;
-    const displayY = Math.min(redProbe.y, blackProbe.y) - 20;
-    
-    const text = `${multimeter.measurement.value.toFixed(2)}${multimeter.measurement.unit}`;
-    const metrics = ctx.measureText(text);
-    const padding = 10;
-    
-    // Draw background
-    ctx.fillRect(
-      displayX - metrics.width/2 - padding,
-      displayY - 16 - padding,
-      metrics.width + padding * 2,
-      32
-    );
-    
-    // Draw text
-    ctx.fillStyle = '#00ff00';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(text, displayX, displayY);
-    ctx.restore();
-  }
 
   ctx.restore();
 };

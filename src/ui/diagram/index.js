@@ -75,7 +75,11 @@ class CircuitDiagram extends React.Component {
     const { store } = this.context;
     
     if (event.key.toLowerCase() === 'm') {
+      console.log('Toggling multimeter');
       store.dispatch(toggleMultimeter());
+      // Log the multimeter state after toggle
+      const state = store.getState();
+      console.log('Multimeter state after toggle:', state.tools.multimeter);
     } else if (event.key.toLowerCase() === 's') {
       console.log('Save key detected');
       store.dispatch(saveCircuitAsChallenge());
