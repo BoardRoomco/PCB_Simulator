@@ -32,11 +32,21 @@ export default {
     resistance: {
       type: 'number',
       unit: 'Ω'
+    },
+    faulty: {
+      type: 'type-select',
+      options: {
+        'Normal': [],
+        'Short': []
+      }
     }
   },
   defaultEditables: {
     resistance: {
       value: DEFAULT_RESISTANCE
+    },
+    faulty: {
+      value: 'Normal'
     }
   },
   labelWith: 'resistance',
