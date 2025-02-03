@@ -42,7 +42,13 @@ class App extends React.Component {
     return (
       <div style={{
         display: 'flex',
-        flexDirection: 'row'
+        flexDirection: 'row',
+        backgroundColor: '#333333',  // Match canvas background color
+        width: '100%',
+        height: '100vh',
+        position: 'fixed',
+        top: 0,
+        left: 0
       }}>
         <Style
           rules={styles.global}
