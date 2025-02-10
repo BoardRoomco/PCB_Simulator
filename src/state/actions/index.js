@@ -36,8 +36,10 @@ export const CHANGE_MULTIMETER_MODE = 'CHANGE_MULTIMETER_MODE';
 
 export const TOGGLE_COMPETITION_MODE = 'TOGGLE_COMPETITION_MODE';
 
+export const SUBMIT_ANSWER = 'SUBMIT_ANSWER';
+
 // Action creators
-export const saveCircuitAsChallenge = () => {
+export const saveCircuitAsChallenge = (correctAnswer) => {
   return function(dispatch, getState) {
     console.log('=== Save Circuit Action Triggered ===');
     
@@ -79,7 +81,8 @@ export const saveCircuitAsChallenge = () => {
 
     const circuitState = {
       views: processedViews,
-      circuit: state.circuit
+      circuit: state.circuit,
+      correctAnswer // Add the correct answer to the saved state
     };
 
     console.log('Saving circuit state:', circuitState);
@@ -294,9 +297,7 @@ export function loopUpdate(delta) {
 export const KEY_PRESS = 'KEY_PRESS';
 export function keyPress(key) {
   return function(dispatch) {
-    if (key.toLowerCase() === 's') {
-      dispatch(saveCircuitAsChallenge());
-    } else if (key.toLowerCase() === 'c') {
+    if (key.toLowerCase() === 'c') {
       dispatch(toggleCompetitionMode());
     }
     return {
@@ -492,3 +493,39 @@ export const changeMultimeterMode = (mode) => ({
 export const toggleCompetitionMode = () => ({
   type: TOGGLE_COMPETITION_MODE
 });
+
+export const submitAnswer = (answer) => {
+  return function(dispatch, getState) {
+    const state = getState();
+    const circuitId = state.circuit.loadedCircuitId; // We'll need to track this
+
+    if (!circuitId) {
+      console.warn('No circuit loaded, cannot submit answer');
+      return;
+    }
+
+    fetch('http://localhost:3001/submit-answer', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        circuitId,
+        submittedAnswer: answer
+      })
+    })
+    .then(response => response.json())
+    .then(data => {
+      dispatch({
+        type: SUBMIT_ANSWER,
+        payload: {
+          answer,
+          isCorrect: data.isCorrect
+        }
+      });
+    })
+    .catch(error => {
+      console.error('Error submitting answer:', error);
+    });
+  };
+};

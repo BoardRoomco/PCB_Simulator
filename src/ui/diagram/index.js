@@ -16,13 +16,15 @@ import {
   rationaliseCurrentOffsets,
   saveCircuitAsChallenge,
   loadCircuit,
-  toggleCompetitionMode
+  toggleCompetitionMode,
+  submitAnswer
 } from '../../state/actions';
 import resize from '../Resize';
 import {relMouseCoords} from '../utils/DrawingUtils';
 import createLoop from './loop';
 import createRender from './render';
 import SimulationControl from './SimulationControl';
+import AnswerBar from './AnswerBar';
 
 const SNAP_DISTANCE = 20; // Distance in pixels to snap to connectors
 
@@ -71,29 +73,22 @@ class CircuitDiagram extends React.Component {
   }
 
   handleKeyPress(event) {
-    console.log('Key pressed:', event.key);
     const { store } = this.context;
     
     if (event.key.toLowerCase() === 'm') {
-      console.log('Toggling multimeter');
       store.dispatch(toggleMultimeter());
-      // Log the multimeter state after toggle
-      const state = store.getState();
-      console.log('Multimeter state after toggle:', state.tools.multimeter);
     } else if (event.key.toLowerCase() === 's') {
-      console.log('Save key detected');
-      store.dispatch(saveCircuitAsChallenge());
+      const correctAnswer = prompt('What is the correct answer for this circuit?');
+      if (correctAnswer) {
+        store.dispatch(saveCircuitAsChallenge(correctAnswer));
+      }
     } else if (event.key.toLowerCase() === 'l') {
-      console.log('Load key detected');
-      // For now, prompt the user for the circuit ID
       const circuitId = prompt('Enter the circuit ID to load:');
       if (circuitId) {
         store.dispatch(loadCircuit(circuitId));
       }
     } else if (event.key.toLowerCase() === 'c') {
-      console.log('Competition mode toggle detected');
       store.dispatch(toggleCompetitionMode());
-      console.log('Competition mode state:', store.getState().competitionMode);
     }
   }
 
@@ -248,6 +243,7 @@ class CircuitDiagram extends React.Component {
           onTouchEnd={this.onMouse}
           onTouchCancel={this.onMouse}
         />
+        <AnswerBar onSubmitAnswer={(answer) => store.dispatch(submitAnswer(answer))} />
       </div>
     );
   }

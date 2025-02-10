@@ -52,8 +52,16 @@ app.post('/save-circuit', async (req, res) => {
         const database = currentClient.db('pcb_challenges');
         const circuits = database.collection('circuits');
 
+        // Add timestamp and answers array to track submissions
+        const circuitData = {
+            ...req.body,
+            createdAt: new Date(),
+            answers: [], // Array to store submitted answers
+            correctAnswer: req.body.correctAnswer // Store the correct answer
+        };
+
         // Save exactly as received - this maintains the exact structure needed for re-rendering
-        const result = await circuits.insertOne(req.body);
+        const result = await circuits.insertOne(circuitData);
         console.log('Circuit saved to MongoDB with ID:', result.insertedId);
 
         // Verify the save
@@ -100,12 +108,77 @@ app.get('/load-circuit/:id', async (req, res) => {
             });
         }
 
+        // Remove correctAnswer from the response to prevent cheating
+        const { correctAnswer, ...circuitWithoutAnswer } = circuit;
+
         res.json({
             success: true,
-            circuit
+            circuit: circuitWithoutAnswer
         });
     } catch (error) {
         console.error('Error loading circuit:', error);
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+});
+
+// Submit answer endpoint
+app.post('/submit-answer', async (req, res) => {
+    console.log('=== Submit Answer Request Received ===');
+    let currentClient = null;
+    
+    try {
+        const { circuitId, submittedAnswer } = req.body;
+        
+        if (!circuitId || submittedAnswer === undefined) {
+            return res.status(400).json({
+                success: false,
+                message: 'Missing required data (circuitId or answer)'
+            });
+        }
+
+        // Connect to MongoDB
+        currentClient = await getClient();
+        const database = currentClient.db('pcb_challenges');
+        const circuits = database.collection('circuits');
+
+        // Find the circuit
+        const circuit = await circuits.findOne({ _id: new ObjectId(circuitId) });
+        
+        if (!circuit) {
+            return res.status(404).json({
+                success: false,
+                message: 'Circuit not found'
+            });
+        }
+
+        // Compare answer (case-insensitive)
+        const isCorrect = submittedAnswer.toString().toLowerCase() === 
+                         circuit.correctAnswer.toString().toLowerCase();
+
+        // Store the submission
+        await circuits.updateOne(
+            { _id: new ObjectId(circuitId) },
+            { 
+                $push: { 
+                    answers: {
+                        answer: submittedAnswer,
+                        isCorrect,
+                        submittedAt: new Date()
+                    }
+                }
+            }
+        );
+
+        res.json({
+            success: true,
+            isCorrect,
+            message: isCorrect ? 'Correct answer!' : 'Incorrect answer, try again.'
+        });
+    } catch (error) {
+        console.error('Error submitting answer:', error);
         res.status(500).json({
             success: false,
             message: error.message

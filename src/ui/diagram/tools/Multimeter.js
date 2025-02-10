@@ -30,14 +30,11 @@ export const initialMultimeterState = {
 
 // Render function for the multimeter
 export const renderMultimeter = ({ctx, theme, multimeter}) => {
-  console.log('Rendering multimeter, state:', multimeter);
   if (!multimeter || !multimeter.active) {
-    console.log('Multimeter not active or undefined');
     return;
   }
 
   const { redProbe, blackProbe } = multimeter.probes;
-  console.log('Drawing probes at:', { redProbe, blackProbe });
   
   ctx.save();
   ctx.lineWidth = LINE_WIDTH;

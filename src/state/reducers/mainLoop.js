@@ -27,7 +27,10 @@ import {
   ADDING_MOVED,
   MOVING_MOVED,
   LOAD_CIRCUIT,
-  SAVE_CIRCUIT_CHALLENGE
+  SAVE_CIRCUIT_CHALLENGE,
+  SUBMIT_ANSWER,
+  START_SIMULATION,
+  STOP_SIMULATION
 } from '../actions';
 
 const INITIAL_STATE = {
@@ -46,7 +49,10 @@ const INITIAL_STATE = {
   simTime: 0,
   timestep: 5e-6,
   simTimePerSec: 1 / 1000,
-  isSimulationRunning: false
+  isSimulationRunning: false,
+  loadedCircuitId: null,
+  lastSubmittedAnswer: null,
+  lastAnswerCorrect: null
 };
 
 // Initialize a component with default values
@@ -83,9 +89,6 @@ const zeroed = (circuit, error) => {
 //  (except possibly in response to stablity issues)
 // Time to be simulated per second should be user-controllable to view high- or low-frequency circuits
 // Current timestep should be user-controllable to view high- or low-current circuits
-
-export const START_SIMULATION = 'START_SIMULATION';
-export const STOP_SIMULATION = 'STOP_SIMULATION';
 
 export function startSimulation() {
   return {
@@ -252,7 +255,15 @@ export default function mainLoopReducer(circuit = INITIAL_STATE, action) {
   case LOAD_CIRCUIT:
     return {
       ...circuit,
-      circuitChanged: true
+      circuitChanged: true,
+      loadedCircuitId: action.circuitId
+    };
+
+  case SUBMIT_ANSWER:
+    return {
+      ...circuit,
+      lastSubmittedAnswer: action.payload.answer,
+      lastAnswerCorrect: action.payload.isCorrect
     };
 
   case START_SIMULATION:
