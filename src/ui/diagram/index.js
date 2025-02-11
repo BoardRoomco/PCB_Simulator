@@ -1,6 +1,7 @@
 import React from 'react';
 import Vector from 'immutable-vector2d';
 import MODES from '../../Modes';
+import { AnnotationManager } from './annotations/AnnotationManager';
 
 import {
   canvasMouseDown,
@@ -52,7 +53,9 @@ class CircuitDiagram extends React.Component {
     this.onMouse = this.onMouse.bind(this);
     this.handleKeyPress = this.handleKeyPress.bind(this);
     this.state = {
-      draggingProbe: null // 'red' or 'black' or null
+      draggingProbe: null, // 'red' or 'black' or null
+      annotationManager: new AnnotationManager(),
+      isAddingText: false
     };
   }
 
@@ -63,7 +66,27 @@ class CircuitDiagram extends React.Component {
   }
 
   componentDidMount() {
-    this.loop = setupLoop(this.context.store, this.canvas.getContext('2d'), this.context.theme);
+    const ctx = this.canvas.getContext('2d');
+    const { store } = this.context;
+    
+    const begin = () => {
+      store.dispatch(loopBegin());
+    };
+    
+    const update = (delta) => {
+      store.dispatch(loopUpdate(delta));
+      store.dispatch(updateCurrentOffsets(delta));
+    };
+    
+    const render = createRender(store, ctx, this.context.theme);
+    const draw = () => {
+      store.dispatch(rationaliseCurrentOffsets());
+      render();
+      // Render annotations after everything else
+      this.state.annotationManager.render(ctx, this.context.theme);
+    };
+
+    this.loop = createLoop(begin, update, draw);
     this.loop.start();
     window.addEventListener('keydown', this.handleKeyPress);
   }
@@ -76,7 +99,10 @@ class CircuitDiagram extends React.Component {
   handleKeyPress(event) {
     const { store } = this.context;
     
-    if (event.key.toLowerCase() === 'm') {
+    if (event.key.toLowerCase() === 't') {
+      // Toggle text annotation mode
+      this.setState(prevState => ({ isAddingText: !prevState.isAddingText }));
+    } else if (event.key.toLowerCase() === 'm') {
       store.dispatch(toggleMultimeter());
     } else if (event.key.toLowerCase() === 's') {
       const correctAnswer = prompt('What is the correct answer for this circuit?');
@@ -182,79 +208,40 @@ class CircuitDiagram extends React.Component {
     const { store } = this.context;
     const coords = relMouseCoords(event, this.canvas);
     const { tools, views } = store.getState();
+    const { annotationManager, isAddingText } = this.state;
 
     switch (event.type) {
       case 'mousedown':
       case 'touchstart':
+        if (isAddingText) {
+          // Add new text annotation
+          annotationManager.addTextAnnotation(coords);
+          this.setState({ isAddingText: false });
+          return;
+        }
+
+        // Check if clicking on existing annotation
+        if (annotationManager.handleMouseDown(coords)) {
+          return;
+        }
+
         // Check if clicking on a probe
         if (this.isProbeAtPosition('red', coords, tools)) {
           this.setState({ draggingProbe: 'red' });
         } else if (this.isProbeAtPosition('black', coords, tools)) {
           this.setState({ draggingProbe: 'black' });
         } else {
-          const mode = store.getState().mode;
-          console.log('Current mode:', mode); // Debug log
-          
-          if (mode.type === MODES.autoGenerate && mode.meta && mode.meta.generateCircuit) {
-            console.log('Auto-generating circuit...'); // Debug log
-            try {
-              const generateCircuit = mode.meta.generateCircuit;
-              const components = generateCircuit();
-              console.log('Generated components:', components); // Debug log
-              
-              if (Array.isArray(components)) {
-                const clickPos = new Vector(coords.x, coords.y);
-                console.log('Click position:', clickPos); // Debug log
-                
-                components.forEach((component, index) => {
-                  console.log(`Processing component ${index}:`, component); // Debug log
-                  
-                  // Ensure dragPoints is an array
-                  if (!Array.isArray(component.dragPoints)) {
-                    console.error('Invalid dragPoints for component:', component);
-                    return;
-                  }
-                  
-                  // Adjust all drag points relative to click position
-                  const adjustedDragPoints = component.dragPoints.map(dp => {
-                    const newPoint = dp.add(clickPos);
-                    console.log('Adjusted drag point:', newPoint); // Debug log
-                    return newPoint;
-                  });
-                  
-                  const action = {
-                    type: 'ADDING_MOVED',
-                    addingComponent: {
-                      ...component,
-                      start: clickPos,
-                      dragPoints: adjustedDragPoints
-                    },
-                    coords: clickPos
-                  };
-                  
-                  console.log('Dispatching action:', action); // Debug log
-                  store.dispatch(action);
-                });
-                
-                // Switch back to select mode after generating
-                store.dispatch({
-                  type: 'CHANGE_MODE',
-                  name: MODES.selectOrMove
-                });
-              } else {
-                console.error('generateCircuit did not return an array:', components);
-              }
-            } catch (error) {
-              console.error('Error generating circuit:', error);
-            }
-          } else {
-            store.dispatch(canvasMouseDown(coords));
-          }
+          store.dispatch(canvasMouseDown(coords));
         }
         break;
 
       case 'mousemove':
       case 'touchmove':
+        // Check if dragging annotation
+        if (annotationManager.handleMouseMove(coords)) {
+          return;
+        }
+
         // If dragging a probe, update its position
         if (this.state.draggingProbe) {
           this.updateProbePosition(this.state.draggingProbe, coords, views);
@@ -266,6 +253,7 @@ class CircuitDiagram extends React.Component {
       case 'mouseup':
       case 'touchend':
       case 'touchcancel':
+        annotationManager.handleMouseUp();
         if (this.state.draggingProbe) {
           this.setState({ draggingProbe: null });
         } else {
@@ -291,11 +279,15 @@ class CircuitDiagram extends React.Component {
   render() {
     const { width, height } = this.props;
     const { store } = this.context;
+    const { isAddingText } = this.state;
+
     return (
       <div>
         <SimulationControl />
         <canvas
-          ref={c => (this.canvas = c)}
+          ref={c => {
+            this.canvas = c;
+          }}
           width={width}
           height={height}
           style={{
@@ -303,7 +295,8 @@ class CircuitDiagram extends React.Component {
             margin: 0,
             border: 0,
             display: 'block',
-            backgroundColor: this.context.theme.COLORS.canvasBackground
+            backgroundColor: this.context.theme.COLORS.canvasBackground,
+            cursor: isAddingText ? 'text' : 'default'
           }}
           tabIndex={0}
           onMouseDown={this.onMouse}
@@ -317,6 +310,9 @@ class CircuitDiagram extends React.Component {
           onTouchCancel={this.onMouse}
         />
         <AnswerBar onSubmitAnswer={(answer) => store.dispatch(submitAnswer(answer))} />
+        <div style={{ position: 'fixed', bottom: 10, right: 10, color: 'white' }}>
+          Press 'T' to add text
+        </div>
       </div>
     );
   }
