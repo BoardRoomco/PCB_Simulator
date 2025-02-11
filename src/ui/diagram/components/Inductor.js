@@ -28,7 +28,7 @@ export default {
   numOfCurrentPaths: 1,
   numOfConnectors: NUM_OF_CONNECTORS,
 
-  width: BOUNDING_BOX_WIDTH, // for label positioning
+  width: BOUNDING_BOX_WIDTH,
   editablesSchema: {
     inductance: {
       type: 'number',
@@ -62,42 +62,57 @@ export default {
 
     const [c1, c2] = tConnectors;
 
+    // Draw connecting wires
     ctx.beginPath();
     ctx.strokeStyle = WIRE_COLOR;
     ctx.lineWidth = 0.1;
     ctx.moveTo(c1.x, 0);
-    ctx.lineTo(-INDUCTOR.RADIUS * 3, 0);
+    ctx.lineTo(-INDUCTOR.RADIUS * 1.5, 0);
     ctx.stroke();
 
     ctx.beginPath();
     ctx.strokeStyle = WIRE_COLOR;
     ctx.lineWidth = 0.1;
     ctx.moveTo(c2.x, 0);
-    ctx.lineTo(INDUCTOR.RADIUS * 3, 0);
+    ctx.lineTo(INDUCTOR.RADIUS * 1.5, 0);
     ctx.stroke();
 
     if (inductorImage.complete) {
       const scale = 0.8;
-      const imageWidth = INDUCTOR.RADIUS * 16 * scale;
-      const imageHeight = imageWidth * 1.2;
+      const baseSize = INDUCTOR.RADIUS * 12;
+      const width = baseSize * scale;
+      const height = baseSize * scale * 1.2;
 
       ctx.drawImage(
         inductorImage,
-        -imageWidth / 2,
-        -imageHeight / 2,
-        imageWidth,
-        imageHeight
+        -width / 2,
+        -height / 2,
+        width,
+        height
       );
     } else {
       // semi-circles (fallback if image not loaded)
       ctx.beginPath();
-      const gradient = ctx.createLinearGradient(-INDUCTOR.RADIUS * 3, 0, INDUCTOR.RADIUS * 3, 0);
+      const gradient = ctx.createLinearGradient(-INDUCTOR.RADIUS * 1.5, 0, INDUCTOR.RADIUS * 1.5, 0);
       gradient.addColorStop(0, colors[0]);
       gradient.addColorStop(1, colors[1]);
       ctx.strokeStyle = gradient;
-      ctx.arc(-INDUCTOR.RADIUS * 2, 0, INDUCTOR.RADIUS, Math.PI, 0);
-      ctx.arc(0, 0, INDUCTOR.RADIUS, Math.PI, 0);
-      ctx.arc(INDUCTOR.RADIUS * 2, 0, INDUCTOR.RADIUS, Math.PI, 0);
+      
+      // Make the semi-circles bigger and taller
+      const radiusX = INDUCTOR.RADIUS * 1.1;
+      const radiusY = INDUCTOR.RADIUS * 1.3;
+      
+      // Draw taller semi-circles
+      ctx.beginPath();
+      ctx.ellipse(-radiusX, 0, radiusX, radiusY, 0, Math.PI, 0);
+      ctx.stroke();
+      
+      ctx.beginPath();
+      ctx.ellipse(0, 0, radiusX, radiusY, 0, Math.PI, 0);
+      ctx.stroke();
+      
+      ctx.beginPath();
+      ctx.ellipse(radiusX, 0, radiusX, radiusY, 0, Math.PI, 0);
       ctx.stroke();
     }
 
