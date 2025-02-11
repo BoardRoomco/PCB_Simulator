@@ -1,5 +1,6 @@
 import React from 'react';
 import Vector from 'immutable-vector2d';
+import MODES from '../../Modes';
 
 import {
   canvasMouseDown,
@@ -85,7 +86,9 @@ class CircuitDiagram extends React.Component {
     } else if (event.key.toLowerCase() === 'l') {
       const circuitId = prompt('Enter the circuit ID to load:');
       if (circuitId) {
-        store.dispatch(loadCircuit(circuitId));
+        const offsetX = parseInt(prompt('Enter X offset (or leave empty for 0):', '0')) || 0;
+        const offsetY = parseInt(prompt('Enter Y offset (or leave empty for 0):', '0')) || 0;
+        store.dispatch(loadCircuit(circuitId, { x: offsetX, y: offsetY }));
       }
     } else if (event.key.toLowerCase() === 'c') {
       store.dispatch(toggleCompetitionMode());
@@ -189,7 +192,64 @@ class CircuitDiagram extends React.Component {
         } else if (this.isProbeAtPosition('black', coords, tools)) {
           this.setState({ draggingProbe: 'black' });
         } else {
-          store.dispatch(canvasMouseDown(coords));
+          const mode = store.getState().mode;
+          console.log('Current mode:', mode); // Debug log
+          
+          if (mode.type === MODES.autoGenerate && mode.meta && mode.meta.generateCircuit) {
+            console.log('Auto-generating circuit...'); // Debug log
+            try {
+              const generateCircuit = mode.meta.generateCircuit;
+              const components = generateCircuit();
+              console.log('Generated components:', components); // Debug log
+              
+              if (Array.isArray(components)) {
+                const clickPos = new Vector(coords.x, coords.y);
+                console.log('Click position:', clickPos); // Debug log
+                
+                components.forEach((component, index) => {
+                  console.log(`Processing component ${index}:`, component); // Debug log
+                  
+                  // Ensure dragPoints is an array
+                  if (!Array.isArray(component.dragPoints)) {
+                    console.error('Invalid dragPoints for component:', component);
+                    return;
+                  }
+                  
+                  // Adjust all drag points relative to click position
+                  const adjustedDragPoints = component.dragPoints.map(dp => {
+                    const newPoint = dp.add(clickPos);
+                    console.log('Adjusted drag point:', newPoint); // Debug log
+                    return newPoint;
+                  });
+                  
+                  const action = {
+                    type: 'ADDING_MOVED',
+                    addingComponent: {
+                      ...component,
+                      start: clickPos,
+                      dragPoints: adjustedDragPoints
+                    },
+                    coords: clickPos
+                  };
+                  
+                  console.log('Dispatching action:', action); // Debug log
+                  store.dispatch(action);
+                });
+                
+                // Switch back to select mode after generating
+                store.dispatch({
+                  type: 'CHANGE_MODE',
+                  name: MODES.selectOrMove
+                });
+              } else {
+                console.error('generateCircuit did not return an array:', components);
+              }
+            } catch (error) {
+              console.error('Error generating circuit:', error);
+            }
+          } else {
+            store.dispatch(canvasMouseDown(coords));
+          }
         }
         break;
 
@@ -212,6 +272,19 @@ class CircuitDiagram extends React.Component {
           store.dispatch(canvasMouseUp(coords));
         }
         break;
+    }
+  }
+
+  handleClick = (event) => {
+    const { mode } = this.props;
+    
+    if (mode.type === MODES.autoGenerate) {
+      const components = mode.meta.generateCircuit();
+      components.forEach(component => {
+        this.props.onAddComponent(component);
+      });
+      // Switch back to select mode after generating
+      this.props.onModeChange(MODES.selectOrMove);
     }
   }
 

@@ -41,6 +41,9 @@ export const SUBMIT_ANSWER = 'SUBMIT_ANSWER';
 export const START_SIMULATION = 'START_SIMULATION';
 export const STOP_SIMULATION = 'STOP_SIMULATION';
 
+export const COPY_COMPONENTS = 'COPY_COMPONENTS';
+export const PASTE_COMPONENTS = 'PASTE_COMPONENTS';
+
 // Action creators
 export const saveCircuitAsChallenge = (correctAnswer) => {
   return function(dispatch, getState) {
@@ -392,7 +395,7 @@ export function rationaliseCurrentOffsets() {
 }
 
 export const LOAD_CIRCUIT = 'LOAD_CIRCUIT';
-export function loadCircuit(circuitId) {
+export function loadCircuit(circuitId, offset = { x: 0, y: 0 }) {
   return function(dispatch) {
     console.log('Loading circuit with ID:', circuitId);
     
@@ -426,20 +429,32 @@ export function loadCircuit(circuitId) {
             return acc;
           }
 
-          // Convert dragPoints back to Vector objects if they're not already
+          // Convert dragPoints back to Vector objects and apply offset
           const dragPoints = (view.dragPoints || []).map(point => {
-            return point instanceof Vector ? point : Vector.fromObject(point);
+            const offsetPoint = {
+              x: point.x + offset.x,
+              y: point.y + offset.y
+            };
+            return point instanceof Vector ? Vector.fromObject(offsetPoint) : Vector.fromObject(offsetPoint);
           });
+
+          // Generate a new unique ID for each component
+          const newId = uuid.v4();
 
           // Initialize current paths based on component type
           const numPaths = ComponentType.numOfCurrentPaths || 1;
 
-          acc[id] = {
+          // Calculate connector positions with offset
+          const tConnectors = ComponentType.transform.getTransformedConnectors(dragPoints);
+          const connectors = ComponentType.transform.getConnectors(dragPoints);
+
+          acc[newId] = {
             ...view,
+            id: newId,
             typeID: view.typeID,
             dragPoints,
-            connectors: view.connectors || [],
-            tConnectors: view.tConnectors || [],
+            connectors,
+            tConnectors,
             currentOffsets: view.currentOffsets || R.repeat(0, numPaths),
             extraOffsets: view.extraOffsets || R.repeat(0, numPaths),
             props: view.props || {}
@@ -455,7 +470,8 @@ export function loadCircuit(circuitId) {
           circuit: {
             views,
             circuit: circuit.circuit
-          }
+          },
+          shouldMerge: true // New flag to indicate we should merge with existing circuit
         });
         
         dispatch(loopBegin());
@@ -540,3 +556,69 @@ export const startSimulation = () => ({
 export const stopSimulation = () => ({
   type: STOP_SIMULATION
 });
+
+export function copyComponents() {
+  return function(dispatch, getState) {
+    const { views } = getState();
+    const selectedComponents = Object.values(views).filter(component => component.hovered);
+    
+    if (selectedComponents.length > 0) {
+      // Store the components in the clipboard
+      window.__CIRCUIT_CLIPBOARD__ = selectedComponents.map(component => ({
+        ...component,
+        id: undefined, // Clear ID so new ones will be generated on paste
+        dragPoints: component.dragPoints.map(point => ({
+          x: point.x,
+          y: point.y
+        }))
+      }));
+      
+      console.log('Copied components to clipboard:', window.__CIRCUIT_CLIPBOARD__);
+    }
+    
+    return {
+      type: COPY_COMPONENTS,
+      components: selectedComponents
+    };
+  };
+}
+
+export function pasteComponents() {
+  return function(dispatch, getState) {
+    const clipboard = window.__CIRCUIT_CLIPBOARD__;
+    if (!clipboard || clipboard.length === 0) {
+      return;
+    }
+
+    const { views } = getState();
+    const offset = { x: GRID_SIZE * 2, y: GRID_SIZE * 2 }; // Offset pasted components
+
+    const newComponents = clipboard.map(component => {
+      const newId = uuid.v4();
+      const newDragPoints = component.dragPoints.map(point => ({
+        x: point.x + offset.x,
+        y: point.y + offset.y
+      }));
+
+      const ComponentType = Components[component.typeID];
+      const tConnectors = ComponentType.transform.getTransformedConnectors(newDragPoints);
+      const connectors = ComponentType.transform.getConnectors(newDragPoints);
+
+      return {
+        ...component,
+        id: newId,
+        dragPoints: newDragPoints,
+        tConnectors,
+        connectors,
+        hovered: false,
+        dragPointIndex: undefined,
+        connectorIndex: undefined
+      };
+    });
+
+    return {
+      type: PASTE_COMPONENTS,
+      components: newComponents
+    };
+  };
+}

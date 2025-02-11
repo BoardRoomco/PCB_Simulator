@@ -18,7 +18,9 @@ import {
   CHANGE_COMPONENT_FREQ,
   SET_HOVERED_COMPONENT,
   UPDATE_CURRENT_OFFSETS,
-  RATIONALISE_CURRENT_OFFSETS
+  RATIONALISE_CURRENT_OFFSETS,
+  COPY_COMPONENTS,
+  PASTE_COMPONENTS
 } from '../actions';
 
 const STANDING_OFFSET = CURRENT.DOT_DISTANCE / 2;
@@ -133,7 +135,7 @@ function moveWholeComponent(views, action) {
 export default function viewsReducer(views = {}, action) {
   switch (action.type) {
   case LOAD_CIRCUIT: {
-    const { circuit } = action;
+    const { circuit, shouldMerge } = action;
     const setInitialCurrentPositions = (view) => {
       const ComponentType = Components[view.typeID];
       if (!ComponentType) {
@@ -195,7 +197,9 @@ export default function viewsReducer(views = {}, action) {
     )(viewsArray);
 
     console.log('Loaded views after processing:', loadedViews);
-    return loadedViews;
+    
+    // If shouldMerge is true, merge with existing views, otherwise replace them
+    return shouldMerge ? { ...views, ...loadedViews } : loadedViews;
   }
   case PRINT_CIRCUIT: {
     const output = R.pipe(
@@ -347,6 +351,17 @@ export default function viewsReducer(views = {}, action) {
       };
     };
     return R.map(updateOffsets, views);
+  }
+
+  case COPY_COMPONENTS:
+    return views; // No state change needed, copying is handled in action
+
+  case PASTE_COMPONENTS: {
+    const newViews = { ...views };
+    action.components.forEach(component => {
+      newViews[component.id] = component;
+    });
+    return newViews;
   }
 
   default: return views;
