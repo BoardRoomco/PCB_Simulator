@@ -10,6 +10,7 @@ import showAddToaster from './reducers/toaster';
 import views from './reducers/views';
 import currentSpeed from './reducers/currentSpeed';
 import tools from './reducers/tools';
+import componentCounters from './reducers/componentCounters';
 
 export default combineReducers({
   mode,
@@ -19,6 +20,7 @@ export default combineReducers({
   movingComponent,
   selected,
   tools,
+  componentCounters,
 
   // used to render canvas
   views,

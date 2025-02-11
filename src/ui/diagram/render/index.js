@@ -16,12 +16,11 @@ export const clearCanvas = ctx => {
 };
 
 export const initCanvas = (ctx, theme) => {
-  ctx.fillStyle = theme.COLORS.base;
-  ctx.strokeStyle = theme.COLORS.base;
   ctx.lineWidth = LINE_WIDTH;
-  ctx.lineJoin = 'round';
   ctx.lineCap = 'round';
-  ctx.save();
+  ctx.lineJoin = 'round';
+  ctx.strokeStyle = theme.COLORS.base;
+  ctx.fillStyle = theme.COLORS.base;
 };
 
 export default (store, ctx, theme) => {
@@ -32,7 +31,8 @@ export default (store, ctx, theme) => {
       circuit: {
         components: circuitState,
         volts2RGB
-      }
+      },
+      componentCounters
     } = store.getState();
 
     clearCanvas(ctx);
@@ -42,6 +42,7 @@ export default (store, ctx, theme) => {
     renderViews({ctx, theme, volts2RGB, circuitState, components: viewsList});
     renderConnectors({ctx, theme, components: viewsList});
     renderDragPoints({ctx, theme, components: viewsList});
+    renderLabels({ctx, theme, components: viewsList, componentCounters});
     renderCurrent({ctx, theme, circuitState, components: viewsList});
     renderTools({ctx, theme, tools, store});
   };
