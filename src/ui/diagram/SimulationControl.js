@@ -1,6 +1,6 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import { startSimulation, stopSimulation } from '../../state/reducers/mainLoop';
+import { startSimulation, stopSimulation } from '../../state/actions';
 
 class SimulationControl extends React.Component {
   componentDidUpdate(prevProps) {

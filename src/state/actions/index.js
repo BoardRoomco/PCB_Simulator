@@ -38,6 +38,9 @@ export const TOGGLE_COMPETITION_MODE = 'TOGGLE_COMPETITION_MODE';
 
 export const SUBMIT_ANSWER = 'SUBMIT_ANSWER';
 
+export const START_SIMULATION = 'START_SIMULATION';
+export const STOP_SIMULATION = 'STOP_SIMULATION';
+
 // Action creators
 export const saveCircuitAsChallenge = (correctAnswer) => {
   return function(dispatch, getState) {
@@ -529,3 +532,11 @@ export const submitAnswer = (answer) => {
     });
   };
 };
+
+export const startSimulation = () => ({
+  type: START_SIMULATION
+});
+
+export const stopSimulation = () => ({
+  type: STOP_SIMULATION
+});

@@ -89,18 +89,14 @@ class ComponentInspector extends React.Component {
 
             // these control which editables are shown
             const typeSelectors = R.pickBy((schema) => schema.type === 'type-select', editablesSchema);
-            const editableNames = R.isEmpty(typeSelectors)
-              ? R.keys(editables)
-              : R.pipe(
-                  R.mapObjIndexed((selector, key) => {
-                    return [
-                      key,
-                      selector.options[editables[key].value]
-                    ];
-                  }),
-                  R.values,
-                  R.flatten
-                )(typeSelectors);
+            const editableNames = R.pipe(
+              R.keys,
+              R.filter(key => {
+                // Show all number type editables and type selectors
+                const schema = editablesSchema[key];
+                return schema.type === 'number' || schema.type === 'type-select';
+              })
+            )(editablesSchema);
 
             const editComponents = editableNames.map(editableName => {
               let EditComponent;

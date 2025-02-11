@@ -90,18 +90,6 @@ const zeroed = (circuit, error) => {
 // Time to be simulated per second should be user-controllable to view high- or low-frequency circuits
 // Current timestep should be user-controllable to view high- or low-current circuits
 
-export function startSimulation() {
-  return {
-    type: START_SIMULATION
-  };
-}
-
-export function stopSimulation() {
-  return {
-    type: STOP_SIMULATION
-  };
-}
-
 export default function mainLoopReducer(circuit = INITIAL_STATE, action) {
   switch (action.type) {
   case LOOP_BEGIN: {

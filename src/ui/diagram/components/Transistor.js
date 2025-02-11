@@ -14,7 +14,6 @@ const MIN_LENGTH = TRANSISTOR_LENGTH + GRID_SIZE;
 
 const BaseTransistorModel = BaseData.Transistor;
 const NUM_OF_CONNECTORS = 3;
-const CONNECTOR_COLORS = ['#4B0082', '#4B0082', '#4B0082']; // Purple for all connectors
 const WIRE_COLOR = '#90EE90';
 
 const transistorImage = new Image();
@@ -36,6 +35,13 @@ export default {
         PMOS: []
       }
     },
+    reflection: {
+      type: 'type-select',
+      options: {
+        'Normal': [],
+        'Flipped': []
+      }
+    },
     W: {
       type: 'number',
       unit: 'μm'
@@ -48,6 +54,9 @@ export default {
   defaultEditables: {
     type: {
       value: 'NMOS'
+    },
+    reflection: {
+      value: 'Normal'
     },
     W: {
       value: 10
@@ -81,6 +90,15 @@ export default {
     const scale = 0.4;
     const symbolWidth = TRANSISTOR_LENGTH * 4 * scale;
     const symbolHeight = symbolWidth * 1.2;
+    const isFlipped = editables.reflection && editables.reflection.value === 'Flipped';
+
+    // Save the current context state
+    ctx.save();
+    
+    // Apply vertical reflection if needed
+    if (isFlipped) {
+      ctx.scale(1, -1);
+    }
 
     if (transistorImage.complete) {
       const imageWidth = symbolWidth * 2;
@@ -135,6 +153,9 @@ export default {
       }
     }
 
+    // Restore context before drawing wires and connectors
+    ctx.restore();
+
     // Draw connecting wires with thinner lines
     ctx.lineWidth = 0.1;
     ctx.strokeStyle = WIRE_COLOR;
@@ -148,25 +169,28 @@ export default {
 
     // Drain connection (left top pin)
     ctx.beginPath();
-    ctx.moveTo(-symbolWidth/3, -8);        // Start at left top pin, increased spacing
+    ctx.moveTo(-symbolWidth/3, isFlipped ? 8 : -8);        // Adjust y-coordinate based on reflection
     ctx.lineTo(drain.x, drain.y);          // End at purple connector
     ctx.stroke();
 
     // Source connection (left bottom pin)
     ctx.beginPath();
-    ctx.moveTo(-symbolWidth/3, 8);         // Start at left bottom pin, increased spacing
+    ctx.moveTo(-symbolWidth/3, isFlipped ? -8 : 8);        // Adjust y-coordinate based on reflection
     ctx.lineTo(source.x, source.y);        // End at purple connector
     ctx.stroke();
 
-    // Draw connector points (purple circles)
+    // Draw connector points
     const connectorRadius = 3;
     tConnectors.forEach((connector, i) => {
-      ctx.beginPath();
-      ctx.strokeStyle = CONNECTOR_COLORS[i];
-      ctx.fillStyle = CONNECTOR_COLORS[i];
-      ctx.arc(connector.x, connector.y, connectorRadius, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.stroke();
+      // Only draw connectors if this connector is being hovered over
+      if (i === connectorIndex) {
+        ctx.beginPath();
+        ctx.strokeStyle = colors[0];  // Use default color from theme
+        ctx.fillStyle = colors[0];    // Use default color from theme
+        ctx.arc(connector.x, connector.y, connectorRadius, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+      }
     });
 
     // Show voltage for hovered connector
