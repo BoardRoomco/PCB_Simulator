@@ -17,22 +17,8 @@ export class TextAnnotation {
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     
-    // Measure text for highlight
-    const metrics = ctx.measureText(this.text);
-    const textWidth = metrics.width;
-    const textHeight = this.fontSize;
-    
-    // Draw yellow highlight
-    ctx.fillStyle = 'rgba(255, 255, 0, 0.3)';  // Semi-transparent yellow
-    ctx.fillRect(
-      this.position.x - textWidth/2 - 5,  // Add padding
-      this.position.y - textHeight/2 - 5,
-      textWidth + 10,
-      textHeight + 10
-    );
-    
     // Draw text
-    ctx.fillStyle = theme.COLORS.base;
+    ctx.fillStyle = '#FFFFFF'; // White text
     ctx.fillText(this.text, this.position.x, this.position.y);
     
     ctx.restore();

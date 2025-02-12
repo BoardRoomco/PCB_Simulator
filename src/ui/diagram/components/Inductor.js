@@ -91,38 +91,21 @@ export default {
         height
       );
     } else {
-      // semi-circles (fallback if image not loaded)
+      // Draw inductor symbol
       ctx.beginPath();
-      const gradient = ctx.createLinearGradient(-INDUCTOR.RADIUS * 1.5, 0, INDUCTOR.RADIUS * 1.5, 0);
-      gradient.addColorStop(0, colors[0]);
-      gradient.addColorStop(1, colors[1]);
-      ctx.strokeStyle = gradient;
+      ctx.strokeStyle = colors[0];
+      ctx.moveTo(-INDUCTOR.RADIUS * 1.5, 0);
+      ctx.lineTo(-INDUCTOR.RADIUS * 0.75, 0);
       
-      // Make the semi-circles bigger and taller
-      const radiusX = INDUCTOR.RADIUS * 1.1;
-      const radiusY = INDUCTOR.RADIUS * 1.3;
+      // Draw the coils
+      ctx.arc(-INDUCTOR.RADIUS * 0.25, 0, INDUCTOR.RADIUS * 0.25, Math.PI, 0, false);
+      ctx.arc(INDUCTOR.RADIUS * 0.25, 0, INDUCTOR.RADIUS * 0.25, Math.PI, 0, false);
+      ctx.arc(INDUCTOR.RADIUS * 0.75, 0, INDUCTOR.RADIUS * 0.25, Math.PI, 0, false);
       
-      // Draw taller semi-circles
-      ctx.beginPath();
-      ctx.ellipse(-radiusX, 0, radiusX, radiusY, 0, Math.PI, 0);
+      ctx.moveTo(INDUCTOR.RADIUS * 1.5, 0);
+      ctx.lineTo(INDUCTOR.RADIUS * 0.75, 0);
+      
       ctx.stroke();
-      
-      ctx.beginPath();
-      ctx.ellipse(0, 0, radiusX, radiusY, 0, Math.PI, 0);
-      ctx.stroke();
-      
-      ctx.beginPath();
-      ctx.ellipse(radiusX, 0, radiusX, radiusY, 0, Math.PI, 0);
-      ctx.stroke();
-    }
-
-    // Only show voltage for hovered connector
-    if (dragPointIndex !== undefined && dragPointIndex !== false && voltages[dragPointIndex] !== undefined) {
-      ctx.fillStyle = 'black';
-      ctx.font = '12px Arial';
-      const voltage = voltages[dragPointIndex];
-      const connector = tConnectors[dragPointIndex];
-      ctx.fillText(`${voltage.toFixed(2)}V`, connector.x, 15);
     }
   },
 

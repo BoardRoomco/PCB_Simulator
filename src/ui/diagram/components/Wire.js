@@ -47,15 +47,6 @@ export default {
     ctx.moveTo(c1.x, 0);
     ctx.lineTo(c2.x, 0);
     ctx.stroke();
-  
-    // Only show voltage for hovered connector
-    if (dragPointIndex !== undefined && dragPointIndex !== false && voltages[dragPointIndex] !== undefined) {
-      ctx.fillStyle = 'black';
-      ctx.font = '12px Arial';
-      const voltage = voltages[dragPointIndex];
-      const connector = tConnectors[dragPointIndex];
-      ctx.fillText(`${voltage.toFixed(2)}V`, connector.x, 15);
-    }
   },
 
   getCurrents: (props, state) => {

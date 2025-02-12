@@ -41,7 +41,7 @@ export const renderMultimeter = ({ctx, theme, multimeter}) => {
 
   // Draw multimeter body
   const multimeterX = 50;  // Fixed position for multimeter body
-  const multimeterY = 50;
+  const multimeterY = 150;  // Changed from 50 to 150 to move it down
 
   // Draw main body (rounded rectangle)
   ctx.fillStyle = '#8B8B00';  // Dark yellow for multimeter body

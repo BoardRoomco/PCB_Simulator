@@ -126,15 +126,6 @@ export default {
       ctx.lineTo(0, RADIUS / 2);
       ctx.stroke();
     }
-
-    // Show voltage only for hovered connector
-    if (connectorIndex !== undefined && connectorIndex !== false && voltages[connectorIndex] !== undefined) {
-      ctx.fillStyle = 'black';
-      ctx.font = '12px Arial';
-      const voltage = voltages[connectorIndex];
-      const connector = tConnectors[connectorIndex];
-      ctx.fillText(`${voltage.toFixed(2)}V`, connector.x, connector.y - 10);
-    }
   },
 
   getCurrents: (state) => {
