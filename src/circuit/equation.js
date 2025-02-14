@@ -82,7 +82,7 @@ const solve = equation => {
   try {
     // Configure Newton-Raphson options
     const tolerance = 1e-6;
-    const maxIterations = 100;
+    const maxIterations = 10;
     
     // Custom Newton-Raphson implementation
     let x = x0;
