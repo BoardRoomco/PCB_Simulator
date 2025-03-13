@@ -1,3 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
 <head>
-  <script src="https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js"></script>
-</head> 
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PCB Simulator</title>
+    <script src="https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background: #1a1a1a;
+            color: white;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .landing-container {
+            text-align: center;
+            padding: 2rem;
+            background: #2a2a2a;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            margin-bottom: 2rem;
+            color: #4CAF50;
+        }
+        
+        .button-container {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+        }
+        
+        .mode-button {
+            padding: 1rem 2rem;
+            font-size: 1.2rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: transform 0.2s, background-color 0.2s;
+        }
+        
+        .mode-button:hover {
+            transform: translateY(-2px);
+        }
+        
+        .editor-button {
+            background-color: #4CAF50;
+            color: white;
+        }
+        
+        .editor-button:hover {
+            background-color: #45a049;
+        }
+        
+        .assessment-button {
+            background-color: #2196F3;
+            color: white;
+        }
+        
+        .assessment-button:hover {
+            background-color: #1e88e5;
+        }
+
+        #landing-page {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            width: 100vw;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1000;
+            background: #1a1a1a;
+        }
+
+        #editor-container {
+            display: none;
+            height: 100vh;
+            width: 100vw;
+        }
+    </style>
+</head>
+<body>
+    <div id="landing-page">
+        <div class="landing-container">
+            <h1>PCB Simulator</h1>
+            <div class="button-container">
+                <button class="mode-button editor-button" onclick="startEditorMode()">Circuit Editor</button>
+                <button class="mode-button assessment-button" onclick="startAssessmentMode()">Take Assessment</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="editor-container">
+        <div id="root"></div>
+    </div>
+
+    <!-- Load the bundled app JavaScript at the end -->
+    <script defer src="/static/js/bundle.js"></script>
+    
+    <script>
+        // Wait for both DOM and bundle to load
+        window.addEventListener('load', function() {
+            // Make sure landing page is visible and editor is hidden
+            document.getElementById('landing-page').style.display = 'flex';
+            document.getElementById('editor-container').style.display = 'none';
+        });
+
+        function startEditorMode() {
+            document.getElementById('landing-page').style.display = 'none';
+            document.getElementById('editor-container').style.display = 'block';
+            // Initialize your existing editor application
+            if (window.initEditor) {
+                window.initEditor();
+            }
+        }
+
+        function startAssessmentMode() {
+            // We'll implement this later
+            alert('Assessment mode coming soon!');
+        }
+    </script>
+</body>
+</html> 

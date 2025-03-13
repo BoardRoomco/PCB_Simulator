@@ -1,7 +1,7 @@
 doctype html
 html(lang="en")
   head
-    title='CircuitSim'
+    title='PCB Simulator'
     meta(charset='utf-8')
     meta(http-equiv='X-UA-Compatible', content='IE=edge')
     meta(name='description', content='Electronic circuit simulator')
@@ -32,7 +32,109 @@ html(lang="en")
     link(href='vendor/octicons/octicons.css' rel='stylesheet' type='text/css')
     link(href='styles.css' rel='stylesheet' type='text/css')
 
-  body
-    #circuitsim
+    style.
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: Arial, sans-serif;
+        background: #1a1a1a;
+        color: white;
+        height: 100vh;
+      }
       
+      .landing-container {
+        text-align: center;
+        padding: 2rem;
+        background: #2a2a2a;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+      
+      h1 {
+        margin-bottom: 2rem;
+        color: #4CAF50;
+      }
+      
+      .button-container {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+      }
+      
+      .mode-button {
+        padding: 1rem 2rem;
+        font-size: 1.2rem;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: transform 0.2s, background-color 0.2s;
+      }
+      
+      .mode-button:hover {
+        transform: translateY(-2px);
+      }
+      
+      .editor-button {
+        background-color: #4CAF50;
+        color: white;
+      }
+      
+      .editor-button:hover {
+        background-color: #45a049;
+      }
+      
+      .assessment-button {
+        background-color: #2196F3;
+        color: white;
+      }
+      
+      .assessment-button:hover {
+        background-color: #1e88e5;
+      }
+
+      #landing-page {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        width: 100vw;
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 1000;
+        background: #1a1a1a;
+      }
+
+      #editor-container {
+        display: none;
+        height: 100vh;
+        width: 100vw;
+      }
+
+  body
+    #landing-page
+      .landing-container
+        h1 PCB Simulator
+        .button-container
+          button.mode-button.editor-button(onclick='startEditorMode()') Circuit Editor
+          button.mode-button.assessment-button(onclick='startAssessmentMode()') Take Assessment
+    
+    #editor-container
+      #circuitsim
+    
+    script.
+      function startEditorMode() {
+        document.getElementById('landing-page').style.display = 'none';
+        document.getElementById('editor-container').style.display = 'block';
+        // Initialize your existing editor application
+        if (window.initEditor) {
+          window.initEditor();
+        }
+      }
+
+      function startAssessmentMode() {
+        // We'll implement this later
+        alert('Assessment mode coming soon!');
+      }
+    
     script(src='./main.js')

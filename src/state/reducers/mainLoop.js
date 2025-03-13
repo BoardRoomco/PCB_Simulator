@@ -220,16 +220,12 @@ export default function mainLoopReducer(circuit = INITIAL_STATE, action) {
       volts2RGB
     } = createVolts2RGB(maxVoltage, prevVoltageRange);
 
-    const newSimTime = simTime + timeToSimulate - timeLeft;
-    console.log('Simulation Time:', newSimTime, 'seconds');
-
     return {
       ...circuit,
       error: false,
       components: circuitState,
       remainingDelta: timeLeft,
-      simTime: newSimTime,
-      isSimulationRunning: newSimTime <= 0.0005, // Stop after 0.0005 seconds
+      simTime: simTime + timeToSimulate - timeLeft,
 
       volts2RGB,
       voltageRange

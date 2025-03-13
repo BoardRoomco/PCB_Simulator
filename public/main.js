@@ -57,13 +57,16 @@ function getCanvasSize() {
 const store = configureStore(reducer);
 store.dispatch(loadCircuit(defaultCircuit));
 
-ReactDOM.render(
-  <Provider store={ store }>
-    <UI
-      styles={ styles }
-      theme={ Theme }
-      getCanvasSize={ getCanvasSize }
-    />
-  </Provider>,
-  document.getElementById('circuitsim')
-);
+// Expose the initialization function globally
+window.initEditor = function() {
+  ReactDOM.render(
+    <Provider store={store}>
+      <UI
+        styles={styles}
+        theme={Theme}
+        getCanvasSize={getCanvasSize}
+      />
+    </Provider>,
+    document.getElementById('circuitsim')
+  );
+};
