@@ -522,6 +522,8 @@ export const toggleCompetitionMode = () => {
           // Extract just the ID string from the ObjectId
           const circuitId = typeof data.circuitId === 'object' ? data.circuitId.$oid || data.circuitId.id : data.circuitId;
           console.log('Found active assessment:', circuitId);
+          // Load the circuit automatically
+          dispatch(loadCircuit(circuitId));
         } else {
           console.error('No active assessment found');
         }
