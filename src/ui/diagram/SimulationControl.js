@@ -24,12 +24,18 @@ class SimulationControl extends React.Component {
   }
 
   render() {
-    const { isSimulationRunning, startSimulation, stopSimulation } = this.props;
+    const { isSimulationRunning, startSimulation, stopSimulation, competitionMode } = this.props;
     return (
-      <div style={styles.container}>
+      <div style={{
+        ...styles.container,
+        ...(competitionMode ? styles.competitionMode : {})
+      }}>
         <button 
           onClick={isSimulationRunning ? stopSimulation : startSimulation}
-          style={styles.button}
+          style={{
+            ...styles.button,
+            backgroundColor: isSimulationRunning ? '#f44336' : '#4CAF50'
+          }}
         >
           {isSimulationRunning ? 'Stop Simulation' : 'Start Simulation'}
         </button>
@@ -45,21 +51,25 @@ const styles = {
     right: '20px',
     zIndex: 1000
   },
+  competitionMode: {
+    right: '50%',
+    transform: 'translateX(50%)'
+  },
   button: {
     padding: '10px 20px',
     fontSize: '16px',
-    backgroundColor: '#4CAF50',
     color: 'white',
     border: 'none',
     borderRadius: '4px',
     cursor: 'pointer',
     boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
-    transition: 'background-color 0.3s'
+    transition: 'all 0.3s'
   }
 };
 
 const mapStateToProps = (state) => ({
-  isSimulationRunning: state.circuit.isSimulationRunning
+  isSimulationRunning: state.circuit.isSimulationRunning,
+  competitionMode: state.tools.competitionMode
 });
 
 const mapDispatchToProps = {
