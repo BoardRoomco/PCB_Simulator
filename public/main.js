@@ -8,7 +8,7 @@ import getWindowDimensions from '../src/ui/utils/getWindowDimensions.js';
 import { Provider } from 'react-redux';
 import configureStore from '../src/state/configureStore';
 import reducer from '../src/state/reducers';
-import {loadCircuit} from '../src/state/actions';
+import {loadCircuit, toggleCompetitionMode} from '../src/state/actions';
 
 import defaultCircuit from './defaultCircuit';
 
@@ -58,7 +58,7 @@ const store = configureStore(reducer);
 store.dispatch(loadCircuit(defaultCircuit));
 
 // Expose the initialization function globally
-window.initEditor = function() {
+window.initEditor = function(isCompetitionMode = false) {
   ReactDOM.render(
     <Provider store={store}>
       <UI
@@ -69,4 +69,8 @@ window.initEditor = function() {
     </Provider>,
     document.getElementById('circuitsim')
   );
+  
+  if (isCompetitionMode) {
+    store.dispatch(toggleCompetitionMode());
+  }
 };

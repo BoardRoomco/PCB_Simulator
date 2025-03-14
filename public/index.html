@@ -124,8 +124,11 @@
         }
 
         function startAssessmentMode() {
-            // We'll implement this later
-            alert('Assessment mode coming soon!');
+            document.getElementById('landing-page').style.display = 'none';
+            document.getElementById('editor-container').style.display = 'block';
+            if (window.initEditor) {
+                window.initEditor(true);  // Pass true to enable competition mode
+            }
         }
     </script>
 </body>
