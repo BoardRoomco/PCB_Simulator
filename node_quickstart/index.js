@@ -186,6 +186,98 @@ app.post('/submit-answer', async (req, res) => {
     }
 });
 
+// Set active assessment endpoint
+app.post('/set-active-assessment', async (req, res) => {
+    console.log('=== Set Active Assessment Request Received ===');
+    let currentClient = null;
+    
+    try {
+        const { circuitId } = req.body;
+        
+        if (!circuitId) {
+            return res.status(400).json({
+                success: false,
+                message: 'Missing required data (circuitId)'
+            });
+        }
+
+        // Connect to MongoDB
+        currentClient = await getClient();
+        const database = currentClient.db('pcb_challenges');
+        const assessments = database.collection('assessments');
+        const circuits = database.collection('circuits');
+
+        // Verify the circuit exists
+        const circuit = await circuits.findOne({ _id: new ObjectId(circuitId) });
+        if (!circuit) {
+            return res.status(404).json({
+                success: false,
+                message: 'Circuit not found'
+            });
+        }
+
+        // Deactivate any currently active assessment
+        await assessments.updateMany(
+            { isActive: true },
+            { $set: { isActive: false } }
+        );
+
+        // Create new active assessment
+        const result = await assessments.insertOne({
+            circuitId: new ObjectId(circuitId),
+            isActive: true,
+            activatedAt: new Date()
+        });
+
+        res.json({
+            success: true,
+            message: 'Assessment activated successfully',
+            assessmentId: result.insertedId
+        });
+    } catch (error) {
+        console.error('Error setting active assessment:', error);
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+});
+
+// Get active assessment endpoint
+app.get('/get-active-assessment', async (req, res) => {
+    console.log('=== Get Active Assessment Request Received ===');
+    let currentClient = null;
+    
+    try {
+        // Connect to MongoDB
+        currentClient = await getClient();
+        const database = currentClient.db('pcb_challenges');
+        const assessments = database.collection('assessments');
+
+        // Find the active assessment
+        const activeAssessment = await assessments.findOne({ isActive: true });
+        
+        if (!activeAssessment) {
+            return res.status(404).json({
+                success: false,
+                message: 'No active assessment found'
+            });
+        }
+
+        res.json({
+            success: true,
+            circuitId: activeAssessment.circuitId,
+            activatedAt: activeAssessment.activatedAt
+        });
+    } catch (error) {
+        console.error('Error getting active assessment:', error);
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+});
+
 // Start server
 const PORT = 3001;
 app.listen(PORT, () => {
