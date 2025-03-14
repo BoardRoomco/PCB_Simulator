@@ -81,4 +81,39 @@ export class AnnotationManager {
       if (fontSize !== undefined) annotation.setFontSize(fontSize);
     }
   }
+
+  // New method to get annotations for saving
+  getAnnotationsForSave() {
+    const annotationsArray = [];
+    for (const annotation of this.annotations.values()) {
+      annotationsArray.push({
+        id: annotation.id,
+        text: annotation.text,
+        position: {
+          x: annotation.position.x || annotation.position.get('x'),
+          y: annotation.position.y || annotation.position.get('y')
+        },
+        fontSize: annotation.fontSize || 24
+      });
+    }
+    return annotationsArray;
+  }
+
+  // New method to load annotations
+  loadAnnotations(annotationsData) {
+    // Clear existing annotations
+    this.annotations.clear();
+    this.selectedAnnotation = null;
+
+    if (!annotationsData || !Array.isArray(annotationsData)) return;
+
+    // Load each annotation
+    for (const data of annotationsData) {
+      const position = Vector.fromObject(data.position);
+      const annotation = new TextAnnotation(data.text, position);
+      annotation.id = data.id;
+      if (data.fontSize) annotation.fontSize = data.fontSize;
+      this.annotations.set(annotation.id, annotation);
+    }
+  }
 } 

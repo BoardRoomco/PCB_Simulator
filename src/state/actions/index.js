@@ -85,10 +85,17 @@ export const saveCircuitAsChallenge = (correctAnswer) => {
       return acc;
     }, {});
 
+    // Get annotations from the AnnotationManager
+    let textAnnotations = [];
+    if (window.circuitDiagram && window.circuitDiagram.state && window.circuitDiagram.state.annotationManager) {
+      textAnnotations = window.circuitDiagram.state.annotationManager.getAnnotationsForSave();
+    }
+
     const circuitState = {
       views: processedViews,
       circuit: state.circuit,
-      correctAnswer // Add the correct answer to the saved state
+      correctAnswer,
+      textAnnotations
     };
 
     console.log('Saving circuit state:', circuitState);
@@ -462,8 +469,18 @@ export function loadCircuit(circuitId, offset = { x: 0, y: 0 }) {
           return acc;
         }, {});
 
-        // Log the processed views for debugging
-        console.log('Processed views:', views);
+        // Load text annotations if they exist
+        if (circuit.textAnnotations && window.circuitDiagram && window.circuitDiagram.state && window.circuitDiagram.state.annotationManager) {
+          // Apply offset to annotation positions
+          const offsetAnnotations = circuit.textAnnotations.map(annotation => ({
+            ...annotation,
+            position: {
+              x: annotation.position.x + offset.x,
+              y: annotation.position.y + offset.y
+            }
+          }));
+          window.circuitDiagram.state.annotationManager.loadAnnotations(offsetAnnotations);
+        }
 
         dispatch({
           type: LOAD_CIRCUIT,
@@ -471,7 +488,7 @@ export function loadCircuit(circuitId, offset = { x: 0, y: 0 }) {
             views,
             circuit: circuit.circuit
           },
-          shouldMerge: true // New flag to indicate we should merge with existing circuit
+          shouldMerge: true
         });
         
         dispatch(loopBegin());

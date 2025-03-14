@@ -69,6 +69,9 @@ class CircuitDiagram extends React.Component {
     const ctx = this.canvas.getContext('2d');
     const { store } = this.context;
     
+    // Expose the circuit diagram instance globally
+    window.circuitDiagram = this;
+    
     const begin = () => {
       store.dispatch(loopBegin());
     };
@@ -94,6 +97,10 @@ class CircuitDiagram extends React.Component {
   componentWillUnmount() {
     this.loop.stop();
     window.removeEventListener('keydown', this.handleKeyPress);
+    // Clean up the global reference
+    if (window.circuitDiagram === this) {
+      window.circuitDiagram = null;
+    }
   }
 
   handleKeyPress(event) {
