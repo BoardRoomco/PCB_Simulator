@@ -509,9 +509,28 @@ export const changeMultimeterMode = (mode) => ({
   payload: { mode }
 });
 
-export const toggleCompetitionMode = () => ({
-  type: TOGGLE_COMPETITION_MODE
-});
+export const toggleCompetitionMode = () => {
+  return function(dispatch) {
+    // First toggle the competition mode
+    dispatch({ type: TOGGLE_COMPETITION_MODE });
+
+    // Fetch the active assessment
+    fetch('http://localhost:3001/get-active-assessment')
+      .then(response => response.json())
+      .then(data => {
+        if (data.success && data.circuitId) {
+          // Extract just the ID string from the ObjectId
+          const circuitId = typeof data.circuitId === 'object' ? data.circuitId.$oid || data.circuitId.id : data.circuitId;
+          console.log('Found active assessment:', circuitId);
+        } else {
+          console.error('No active assessment found');
+        }
+      })
+      .catch(error => {
+        console.error('Error fetching active assessment:', error);
+      });
+  };
+};
 
 export const submitAnswer = (answer) => {
   return function(dispatch, getState) {
