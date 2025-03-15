@@ -25,11 +25,14 @@ class SimulationControl extends React.Component {
 
   render() {
     const { isSimulationRunning, startSimulation, stopSimulation, competitionMode } = this.props;
+    
+    // Don't render anything in competition mode
+    if (competitionMode) {
+      return null;
+    }
+
     return (
-      <div style={{
-        ...styles.container,
-        ...(competitionMode ? styles.competitionMode : {})
-      }}>
+      <div style={styles.container}>
         <button 
           onClick={isSimulationRunning ? stopSimulation : startSimulation}
           style={{
@@ -50,10 +53,6 @@ const styles = {
     top: '20px',
     right: '20px',
     zIndex: 1000
-  },
-  competitionMode: {
-    right: '50%',
-    transform: 'translateX(50%)'
   },
   button: {
     padding: '10px 20px',
