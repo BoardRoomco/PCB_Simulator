@@ -1,94 +1,135 @@
-<!DOCTYPE html><html lang="en"><head><title>PCB Simulator</title><meta charset="utf-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="description" content="Electronic circuit simulator"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="apple-touch-icon" sizes="57x57" href="icons/apple-touch-icon-57x57.png"><link rel="apple-touch-icon" sizes="60x60" href="icons/apple-touch-icon-60x60.png"><link rel="apple-touch-icon" sizes="72x72" href="icons/apple-touch-icon-72x72.png"><link rel="apple-touch-icon" sizes="76x76" href="icons/apple-touch-icon-76x76.png"><link rel="apple-touch-icon" sizes="114x114" href="icons/apple-touch-icon-114x114.png"><link rel="apple-touch-icon" sizes="120x120" href="icons/apple-touch-icon-120x120.png"><link rel="apple-touch-icon" sizes="144x144" href="icons/apple-touch-icon-144x144.png"><link rel="apple-touch-icon" sizes="152x152" href="icons/apple-touch-icon-152x152.png"><link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon-180x180.png"><link rel="icon" type="image/png" href="icons/favicon-32x32.png" sizes="32x32"><link rel="icon" type="image/png" href="icons/favicon-194x194.png" sizes="194x194"><link rel="icon" type="image/png" href="icons/favicon-96x96.png" sizes="96x96"><link rel="icon" type="image/png" href="icons/android-chrome-192x192.png" sizes="192x192"><link rel="icon" type="image/png" href="icons/favicon-16x16.png" sizes="16x16"><link rel="manifest" href="icons/manifest.json"><link rel="shortcut icon" href="icons/favicon.ico"><meta name="msapplication-TileColor" content="#2d89ef"><meta name="msapplication-TileImage" content="icons/mstile-144x144.png"><meta name="msapplication-config" content="icons/browserconfig.xml"><meta name="theme-color" content="#ffffff"><link href="https://fonts.googleapis.com/css?family=Open+Sans:400,600" rel="stylesheet" type="text/css"><link href="vendor/octicons/octicons.css" rel="stylesheet" type="text/css"><link href="styles.css" rel="stylesheet" type="text/css"><style>body {
-  margin: 0;
-  padding: 0;
-  font-family: Arial, sans-serif;
-  background: #1a1a1a;
-  color: white;
-  height: 100vh;
-}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PCB Simulator</title>
+    <script src="https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background: #1a1a1a;
+            color: white;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .landing-container {
+            text-align: center;
+            padding: 2rem;
+            background: #2a2a2a;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            margin-bottom: 2rem;
+            color: #4CAF50;
+        }
+        
+        .button-container {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+        }
+        
+        .mode-button {
+            padding: 1rem 2rem;
+            font-size: 1.2rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: transform 0.2s, background-color 0.2s;
+        }
+        
+        .mode-button:hover {
+            transform: translateY(-2px);
+        }
+        
+        .editor-button {
+            background-color: #4CAF50;
+            color: white;
+        }
+        
+        .editor-button:hover {
+            background-color: #45a049;
+        }
+        
+        .assessment-button {
+            background-color: #2196F3;
+            color: white;
+        }
+        
+        .assessment-button:hover {
+            background-color: #1e88e5;
+        }
 
-.landing-container {
-  text-align: center;
-  padding: 2rem;
-  background: #2a2a2a;
-  border-radius: 10px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
+        #landing-page {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            width: 100vw;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1000;
+            background: #1a1a1a;
+        }
 
-h1 {
-  margin-bottom: 2rem;
-  color: #4CAF50;
-}
+        #editor-container {
+            display: none;
+            height: 100vh;
+            width: 100vw;
+        }
+    </style>
+</head>
+<body>
+    <div id="landing-page">
+        <div class="landing-container">
+            <h1>PCB Simulator</h1>
+            <div class="button-container">
+                <button class="mode-button editor-button" onclick="startEditorMode()">Circuit Editor</button>
+                <button class="mode-button assessment-button" onclick="startAssessmentMode()">Take Assessment</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="editor-container">
+        <div id="root"></div>
+    </div>
 
-.button-container {
-  display: flex;
-  gap: 1rem;
-  justify-content: center;
-}
+    <!-- Load the bundled app JavaScript at the end -->
+    <script defer src="/static/js/bundle.js"></script>
+    
+    <script>
+        // Wait for both DOM and bundle to load
+        window.addEventListener('load', function() {
+            // Make sure landing page is visible and editor is hidden
+            document.getElementById('landing-page').style.display = 'flex';
+            document.getElementById('editor-container').style.display = 'none';
+        });
 
-.mode-button {
-  padding: 1rem 2rem;
-  font-size: 1.2rem;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: transform 0.2s, background-color 0.2s;
-}
+        function startEditorMode() {
+            document.getElementById('landing-page').style.display = 'none';
+            document.getElementById('editor-container').style.display = 'block';
+            // Initialize your existing editor application
+            if (window.initEditor) {
+                window.initEditor();
+            }
+        }
 
-.mode-button:hover {
-  transform: translateY(-2px);
-}
-
-.editor-button {
-  background-color: #4CAF50;
-  color: white;
-}
-
-.editor-button:hover {
-  background-color: #45a049;
-}
-
-.assessment-button {
-  background-color: #2196F3;
-  color: white;
-}
-
-.assessment-button:hover {
-  background-color: #1e88e5;
-}
-
-#landing-page {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  width: 100vw;
-  position: fixed;
-  top: 0;
-  left: 0;
-  z-index: 1000;
-  background: #1a1a1a;
-}
-
-#editor-container {
-  display: none;
-  height: 100vh;
-  width: 100vw;
-}
-</style></head><body><div id="landing-page"><div class="landing-container"><h1>PCB Simulator</h1><div class="button-container"><button onclick="startEditorMode()" class="mode-button editor-button">Circuit Editor</button><button onclick="startAssessmentMode()" class="mode-button assessment-button">Take Assessment</button></div></div></div><div id="editor-container"><div id="circuitsim"></div></div><script>function startEditorMode() {
-  document.getElementById('landing-page').style.display = 'none';
-  document.getElementById('editor-container').style.display = 'block';
-  // Initialize your existing editor application
-  if (window.initEditor) {
-    window.initEditor();
-  }
-}
-
-function startAssessmentMode() {
-  document.getElementById('landing-page').style.display = 'none';
-  document.getElementById('editor-container').style.display = 'block';
-  if (window.initEditor) {
-    window.initEditor(true);  // Pass true to enable competition mode
-  }
-}
-</script><script src="./main.js"></script></body></html>
+        function startAssessmentMode() {
+            document.getElementById('landing-page').style.display = 'none';
+            document.getElementById('editor-container').style.display = 'block';
+            if (window.initEditor) {
+                window.initEditor(true);  // Pass true to enable competition mode
+            }
+        }
+    </script>
+</body>
+</html> 
