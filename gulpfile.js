@@ -61,8 +61,8 @@ function icons(outDir) {
 
 function staticFiles(outDir) {
   return function() {
-    // Copy JSON and MD files
-    gulp.src(['public/*.json', 'public/*.md'])
+    // Copy JSON files only, exclude MD files
+    gulp.src(['public/*.json'])
       .pipe(gulp.dest(outDir));
     
     // Copy .nojekyll file

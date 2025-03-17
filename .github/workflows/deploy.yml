@@ -30,7 +30,20 @@ jobs:
         run: gulp build
 
       - name: List build directory
-        run: ls -la build/
+        run: |
+          echo "Contents of build directory:"
+          ls -la build/
+          echo "Contents of build/index.html (if exists):"
+          cat build/index.html || echo "index.html not found"
+
+      - name: Remove README from build
+        run: rm -f build/README.md
+
+      - name: Create index.html if missing
+        run: |
+          if [ ! -f build/index.html ]; then
+            cp public/index.html build/index.html
+          fi
 
       - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4
