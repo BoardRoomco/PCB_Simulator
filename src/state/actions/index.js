@@ -335,7 +335,8 @@ export function selectMode(buttonID) {
 export const DELETE_COMPONENT = 'DELETE_COMPONENT';
 export function deleteComponent(id) {
   return function(dispatch, getState) {
-    const { selected } = getState();
+    const { selected, views } = getState();
+    const component = views[id];
     dispatch({
       type: UNSELECT_COMPONENT,
       id,
@@ -343,7 +344,11 @@ export function deleteComponent(id) {
     });
     dispatch({
       type: DELETE_COMPONENT,
-      id
+      id,
+      component: {
+        id,
+        typeID: component.typeID
+      }
     });
   };
 }

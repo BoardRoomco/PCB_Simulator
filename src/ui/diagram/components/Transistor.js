@@ -75,10 +75,7 @@ export default {
   render: (ctx, props) => {
     const {
       tConnectors,
-      colors,
-      voltages = [],
-      connectorIndex,
-      editables = {}
+      colors
     } = props;
 
     if (!tConnectors || !colors) {
@@ -87,121 +84,44 @@ export default {
     }
 
     const [drain, gate, source] = tConnectors;
-    const scale = 0.4;
-    const symbolWidth = TRANSISTOR_LENGTH * 4 * scale;
-    const symbolHeight = symbolWidth * 1.2;
-    const isFlipped = editables.reflection && editables.reflection.value === 'Flipped';
+    const baseSize = GRID_SIZE * 4;
 
-    // Save the current context state
-    ctx.save();
-    
-    // Apply vertical reflection if needed
-    if (isFlipped) {
-      ctx.scale(1, -1);
-    }
-
+    // Draw transistor symbol
     if (transistorImage.complete) {
-      const imageWidth = symbolWidth * 2;
-      const imageHeight = symbolHeight * 2;
+      const scale = 0.8;
+      const imageWidth = baseSize * 1.4;
+      const imageHeight = baseSize * 1.8;
 
       ctx.drawImage(
         transistorImage,
-        -imageWidth/2,
-        -imageHeight/2,
+        -imageWidth / 2,
+        -imageHeight / 2,
         imageWidth,
         imageHeight
       );
-    } else {
-      // Draw gate line (vertical)
-      ctx.beginPath();
-      ctx.strokeStyle = colors[0];
-      ctx.lineWidth = 2;
-      ctx.moveTo(0, -symbolHeight/2);
-      ctx.lineTo(0, symbolHeight/2);
-      ctx.stroke();
-
-      // Draw drain-source channel (horizontal)
-      ctx.beginPath();
-      ctx.moveTo(0, -symbolHeight/3);
-      ctx.lineTo(symbolWidth/2, -symbolHeight/3);
-      ctx.moveTo(0, symbolHeight/3);
-      ctx.lineTo(symbolWidth/2, symbolHeight/3);
-      ctx.stroke();
-
-      // Draw source terminal
-      ctx.beginPath();
-      ctx.moveTo(symbolWidth/2, -symbolHeight/3);
-      ctx.lineTo(symbolWidth/2, symbolHeight/3);
-      ctx.stroke();
-
-      // Draw gate arrow (for NMOS) or circle (for PMOS)
-      const isNMOS = editables.type && editables.type.value === 'NMOS';
-      if (isNMOS) {
-        // Draw arrow pointing in
-        ctx.beginPath();
-        ctx.moveTo(0, 0);
-        ctx.lineTo(symbolWidth/4, -symbolHeight/6);
-        ctx.lineTo(symbolWidth/4, symbolHeight/6);
-        ctx.closePath();
-        ctx.fillStyle = colors[0];
-        ctx.fill();
-      } else {
-        // Draw circle for PMOS
-        ctx.beginPath();
-        ctx.arc(symbolWidth/4, 0, symbolHeight/6, 0, Math.PI * 2);
-        ctx.stroke();
-      }
     }
 
-    // Restore context before drawing wires and connectors
-    ctx.restore();
-
-    // Draw connecting wires with thinner lines
-    ctx.lineWidth = 0.1;
-    ctx.strokeStyle = WIRE_COLOR;
-
-    // Draw connecting wires to match the pins in the image
-    // Gate connection (right pin)
+    // Draw connecting wires
     ctx.beginPath();
-    ctx.moveTo(symbolWidth/3, 0);          // Start at right pin
-    ctx.lineTo(gate.x, gate.y);            // End at purple connector
-    ctx.stroke();
+    ctx.strokeStyle = WIRE_COLOR;
+    ctx.lineWidth = 0.1;
 
     // Drain connection (left top pin)
+    ctx.moveTo(-baseSize/3, -8);
+    ctx.lineTo(drain.x, drain.y);
+    ctx.stroke();
+
+    // Gate connection (middle pin)
     ctx.beginPath();
-    ctx.moveTo(-symbolWidth/3, isFlipped ? 8 : -8);        // Adjust y-coordinate based on reflection
-    ctx.lineTo(drain.x, drain.y);          // End at purple connector
+    ctx.moveTo(0, 0);
+    ctx.lineTo(gate.x, gate.y);
     ctx.stroke();
 
     // Source connection (left bottom pin)
     ctx.beginPath();
-    ctx.moveTo(-symbolWidth/3, isFlipped ? -8 : 8);        // Adjust y-coordinate based on reflection
-    ctx.lineTo(source.x, source.y);        // End at purple connector
+    ctx.moveTo(-baseSize/3, 8);
+    ctx.lineTo(source.x, source.y);
     ctx.stroke();
-
-    // Draw connector points
-    const connectorRadius = 3;
-    tConnectors.forEach((connector, i) => {
-      // Only draw connectors if this connector is being hovered over
-      if (i === connectorIndex) {
-        ctx.beginPath();
-        ctx.strokeStyle = colors[0];  // Use default color from theme
-        ctx.fillStyle = colors[0];    // Use default color from theme
-        ctx.arc(connector.x, connector.y, connectorRadius, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.stroke();
-      }
-    });
-
-    // Show voltage for hovered connector
-    if (connectorIndex !== undefined && connectorIndex !== false && voltages[connectorIndex] !== undefined) {
-      ctx.fillStyle = 'black';
-      ctx.font = '12px Arial';
-      const voltage = voltages[connectorIndex];
-      const connector = tConnectors[connectorIndex];
-      const label = ['D', 'G', 'S'][connectorIndex];
-      ctx.fillText(`${label}: ${voltage.toFixed(2)}V`, connector.x - 20, connector.y - 10);
-    }
   },
 
   getCurrents: (props, state) => {

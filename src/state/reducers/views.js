@@ -186,7 +186,25 @@ export default function viewsReducer(views = {}, action) {
 
     // Ensure we're working with an array of views
     const viewsArray = circuit.views ? Object.values(circuit.views) : [];
-    console.log('Views array before processing:', viewsArray);
+
+    // Group components by type to assign numbers
+    const componentsByType = {};
+    viewsArray.forEach(view => {
+      if (!componentsByType[view.typeID]) {
+        componentsByType[view.typeID] = [];
+      }
+      componentsByType[view.typeID].push(view);
+    });
+
+    // Process each view and assign component numbers
+    const processedViews = viewsArray.map(view => {
+      const typeComponents = componentsByType[view.typeID];
+      const componentNumber = typeComponents.indexOf(view) + 1;
+      return {
+        ...view,
+        componentNumber
+      };
+    });
 
     const loadedViews = R.pipe(
       R.map(setInitialCurrentPositions),
@@ -194,9 +212,7 @@ export default function viewsReducer(views = {}, action) {
       R.map(setConnectorPositions),
       R.groupBy(R.prop('id')),
       R.map(R.head)
-    )(viewsArray);
-
-    console.log('Loaded views after processing:', loadedViews);
+    )(processedViews);
     
     // If shouldMerge is true, merge with existing views, otherwise replace them
     return shouldMerge ? { ...views, ...loadedViews } : loadedViews;
@@ -226,18 +242,25 @@ export default function viewsReducer(views = {}, action) {
     const tConnectors = Component.transform.getTransformedConnectors(dragPoints);
     const connectors = Component.transform.getConnectors(dragPoints);
 
+    // Count existing components of this type to determine number
+    const existingComponents = Object.values(views).filter(v => v.typeID === typeID);
+    const componentNumber = existingComponents.length + 1;
+
+    const newView = {
+      typeID,
+      id,
+      componentNumber,
+      editables: Component.defaultEditables,
+      dragPoints,
+      tConnectors,
+      connectors,
+      currentOffsets: R.repeat(STANDING_OFFSET, Component.numOfCurrentPaths),
+      extraOffsets: R.repeat(0, Component.numOfCurrentPaths)
+    };
+
     return {
       ...views,
-      [id]: {
-        typeID,
-        id,
-        editables: Component.defaultEditables,
-        dragPoints,
-        tConnectors,
-        connectors,
-        currentOffsets: R.repeat(STANDING_OFFSET, Component.numOfCurrentPaths),
-        extraOffsets: R.repeat(0, Component.numOfCurrentPaths)
-      }
+      [id]: newView
     };
   }
 

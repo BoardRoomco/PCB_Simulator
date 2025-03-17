@@ -49,9 +49,7 @@ export default {
   render: (ctx, props) => {
     const {
       tConnectors,
-      colors,
-      voltages = [],
-      connectorIndex
+      colors
     } = props;
 
     if (!tConnectors || !colors) {
@@ -99,14 +97,6 @@ export default {
       ctx.moveTo(CAPACITOR_LENGTH / 2, -CAPACITOR.WIDTH / 2);
       ctx.lineTo(CAPACITOR_LENGTH / 2, CAPACITOR.WIDTH / 2);
       ctx.stroke();
-    }
-
-    if (connectorIndex !== undefined && connectorIndex !== false && voltages[connectorIndex] !== undefined) {
-      ctx.fillStyle = 'black';
-      ctx.font = '12px Arial';
-      const voltage = voltages[connectorIndex];
-      const connector = tConnectors[connectorIndex];
-      ctx.fillText(`${voltage.toFixed(2)}V`, connector.x, connector.y - 10);
     }
   },
 

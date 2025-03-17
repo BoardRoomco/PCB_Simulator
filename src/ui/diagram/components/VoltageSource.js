@@ -72,9 +72,7 @@ export default {
   render: (ctx, props) => {
     const {
       tConnectors,
-      colors,
-      voltages = [],
-      connectorIndex
+      colors
     } = props;
 
     if (!tConnectors || !colors) {

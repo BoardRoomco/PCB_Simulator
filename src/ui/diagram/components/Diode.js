@@ -49,9 +49,7 @@ export default {
   render: (ctx, props) => {
     const {
       tConnectors,
-      colors,
-      voltages = [],
-      dragPointIndex
+      colors
     } = props;
 
     if (!tConnectors || !colors) {
@@ -106,14 +104,6 @@ export default {
       ctx.moveTo(DIODE_LENGTH/2, -DIODE.WIDTH/2);
       ctx.lineTo(DIODE_LENGTH/2, DIODE.WIDTH/2);
       ctx.stroke();
-    }
-
-    if (dragPointIndex !== undefined && dragPointIndex !== false && voltages[dragPointIndex] !== undefined) {
-      ctx.fillStyle = 'black';
-      ctx.font = '12px Arial';
-      const voltage = voltages[dragPointIndex];
-      const connector = tConnectors[dragPointIndex];
-      ctx.fillText(`${voltage.toFixed(2)}V`, connector.x, 15);
     }
   },
 

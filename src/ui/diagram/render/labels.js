@@ -12,7 +12,7 @@ const lookupComponent = viewProps => CircuitComponents[viewProps.typeID];
 const FONT_SIZE = 10;
 const FONT = `${FONT_SIZE}px "Arial"`;
 
-const getComponentName = (typeID, componentNumber) => {
+const getComponentName = (typeID, component) => {
   const prefixMap = {
     Resistor: 'R',
     Capacitor: 'C',
@@ -24,7 +24,7 @@ const getComponentName = (typeID, componentNumber) => {
   };
 
   const prefix = prefixMap[typeID] || typeID[0];
-  return `${prefix}${componentNumber + 1}`;
+  return `${prefix}${component.componentNumber}`;
 };
 
 const formatValue = (component) => {
@@ -72,7 +72,7 @@ const renderLabel = (ctx, componentCounters) => (component) => {
 
   const componentName = getComponentName(
     component.typeID,
-    componentCounters[component.typeID] || 0
+    component
   );
 
   const label = `${componentName}: ${formattedValue}`;
