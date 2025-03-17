@@ -4,10 +4,12 @@
     <meta charset="utf-8">
     <title>Redirecting...</title>
     <script>
-        window.location.href = '/PCB_Simulator_V3/';
+        // Get the correct base path from the current URL
+        var basePath = window.location.pathname.split('/')[1];
+        window.location.href = '/' + basePath + '/';
     </script>
 </head>
 <body>
-    <p>If you are not redirected automatically, <a href="/PCB_Simulator_V3/">click here</a>.</p>
+    <p>If you are not redirected automatically, <a href="/">return to home</a>.</p>
 </body>
 </html> 
