@@ -15,12 +15,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "http://github.com/circuitsim/circuit-simulator"
+    "url": "https://github.com/nainagarg/PCB_Simulator_V3.git"
   },
   "bugs": {
-    "url": "http://github.com/circuitsim/circuit-simulator/issues"
+    "url": "https://github.com/nainagarg/PCB_Simulator_V3/issues"
   },
-  "homepage": "http://github.com/circuitsim/circuit-simulator",
+  "homepage": "https://nainagarg.github.io/PCB_Simulator_V3",
   "license": "EPL-1.0",
   "scripts": {
     "dev": "gulp",
