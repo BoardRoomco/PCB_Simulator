@@ -9,14 +9,14 @@ var jade = require('gulp-jade');
 var connect = require('gulp-connect');
 var uglify = require('gulp-uglify');
 var envify = require('envify/custom');
-var file = require('gulp-file');
+var fs = require('fs');
 var path = require('path');
 
 var buildDir = 'build';
 var devBuildDir = 'dev_build';
 
 function handleError(err) {
-  console.error(err); // eslint-disable-line no-console
+  console.error(err);
   this.emit('end');
 }
 
@@ -50,7 +50,6 @@ function icons(outDir) {
       .pipe(gulp.dest(outDir + '/icons'));
   };
 }
-
 
 gulp.task('templates', templates(devBuildDir));
 gulp.task('styles', styles(devBuildDir));
@@ -113,7 +112,6 @@ gulp.task('connect', function(done) {
   done();
 });
 
-
 gulp.task('watch', function(done) {
   gulp.watch('public/*.jade', gulp.series('templates'));
   gulp.watch('public/*.css', gulp.series('styles'));
@@ -124,34 +122,45 @@ gulp.task('watch', function(done) {
   done();
 });
 
+function buildJs() {
+  return new Promise((resolve, reject) => {
+    browserify('./public/main.js')
+      .transform(envify({
+        NODE_ENV: 'production'
+      }), {global: true})
+      .transform(babel.configure({
+        presets: ['es2015', 'react', 'stage-2'],
+        plugins: []
+      }))
+      .bundle()
+      .on('error', reject)
+      .pipe(source('main.js'))
+      .pipe(buffer())
+      .pipe(uglify())
+      .pipe(gulp.dest(buildDir))
+      .on('end', resolve);
+  });
+}
+
 gulp.task('build', gulp.series(function(done) {
-  templates(buildDir)();
-  styles(buildDir)();
-  vendor(buildDir)();
-  icons(buildDir)();
+  // Create build directory if it doesn't exist
+  if (!fs.existsSync(buildDir)) {
+    fs.mkdirSync(buildDir);
+  }
   
-  file('CNAME', 'circuits.im', { src: true })
-    .pipe(gulp.dest(buildDir));
-    
-  browserify('./public/main.js')
-    .transform(envify({
-      NODE_ENV: 'production'
-    }), {global: true})
-    .transform(babel.configure({
-      presets: ['es2015', 'react', 'stage-2'],
-      optional: [
-        'optimisation.react.constantElements',
-        'optimisation.react.inlineElements'
-      ]
-    }))
-    .bundle()
-    .on('error', handleError)
-    .pipe(source('main.js'))
-    .pipe(buffer())
-    .pipe(uglify())
-    .pipe(gulp.dest(buildDir));
-    
-  done();
+  // Run all build tasks in parallel
+  Promise.all([
+    templates(buildDir)(),
+    styles(buildDir)(),
+    vendor(buildDir)(),
+    icons(buildDir)(),
+    buildJs()
+  ]).then(() => {
+    done();
+  }).catch((err) => {
+    console.error('Build error:', err);
+    done(err);
+  });
 }));
 
 gulp.task('default', gulp.series(
