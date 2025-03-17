@@ -541,6 +541,10 @@ export const toggleCompetitionMode = () => {
           console.log('Found active assessment:', circuitId);
           // Load the circuit automatically
           dispatch(loadCircuit(circuitId));
+          // Start simulation automatically in assessment mode
+          setTimeout(() => {
+            dispatch(startSimulation());
+          }, 1000); // Wait 1 second for circuit to load
         } else {
           console.error('No active assessment found');
         }
