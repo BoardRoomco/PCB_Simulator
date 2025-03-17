@@ -23,15 +23,15 @@ function handleError(err) {
 function templates(outDir) {
   return function() {
     // Process Jade files
-    gulp.src('public/*.jade')
+    const jadeStream = gulp.src('public/*.jade')
       .pipe(jade({
         pretty: true
       }))
       .pipe(gulp.dest(outDir))
       .pipe(connect.reload());
-    
-    // Copy HTML files directly
-    return gulp.src('public/*.html')
+
+    // Copy HTML files directly, but only if no corresponding Jade file exists
+    return gulp.src(['public/*.html'])
       .pipe(gulp.dest(outDir))
       .pipe(connect.reload());
   };

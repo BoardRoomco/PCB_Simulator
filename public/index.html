@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PCB Simulator</title>
     <script src="https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js"></script>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,600' rel='stylesheet' type='text/css'>
+    <link href='vendor/octicons/octicons.css' rel='stylesheet' type='text/css'>
+    <link href='styles.css' rel='stylesheet' type='text/css'>
     <style>
         body {
             margin: 0;
@@ -100,20 +103,10 @@
     </div>
     
     <div id="editor-container">
-        <div id="root"></div>
+        <div id="circuitsim"></div>
     </div>
 
-    <!-- Load the bundled app JavaScript at the end -->
-    <script defer src="main.js"></script>
-    
     <script>
-        // Wait for both DOM and bundle to load
-        window.addEventListener('load', function() {
-            // Make sure landing page is visible and editor is hidden
-            document.getElementById('landing-page').style.display = 'flex';
-            document.getElementById('editor-container').style.display = 'none';
-        });
-
         function startEditorMode() {
             document.getElementById('landing-page').style.display = 'none';
             document.getElementById('editor-container').style.display = 'block';
@@ -131,5 +124,7 @@
             }
         }
     </script>
+    
+    <script src="./main.js"></script>
 </body>
 </html> 
