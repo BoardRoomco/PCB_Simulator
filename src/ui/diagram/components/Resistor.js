@@ -18,7 +18,7 @@ const NUM_OF_CONNECTORS = 2;
 const WIRE_COLOR = '#90EE90';
 
 const resistorImage = new Image();
-resistorImage.src = '/icons/resistor.png';
+resistorImage.src = 'icons/resistor.png';
 
 export default {
   typeID: BaseResistorModel.typeID,

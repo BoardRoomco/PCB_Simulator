@@ -18,7 +18,7 @@ const NUM_OF_CONNECTORS = 2;
 const WIRE_COLOR = '#90EE90';
 
 const diodeImage = new Image();
-diodeImage.src = '/icons/diode.png';
+diodeImage.src = 'icons/diode.png';
 
 export default {
   typeID: BaseDiodeModel.typeID,

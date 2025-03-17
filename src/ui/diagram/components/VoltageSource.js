@@ -23,7 +23,7 @@ const NUM_OF_CONNECTORS = 2;
 const WIRE_COLOR = '#90EE90';
 
 const voltageSourceImage = new Image();
-voltageSourceImage.src = '/icons/voltage_source.png';
+voltageSourceImage.src = 'icons/voltage_source.png';
 
 export default {
   typeID: BaseVoltageSourceModel.typeID,

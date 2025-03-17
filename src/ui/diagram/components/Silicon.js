@@ -12,7 +12,7 @@ const BaseModel = BaseData.Silicon;
 const WIRE_COLOR = '#90EE90';
 
 const siliconImage = new Image();
-siliconImage.src = '/icons/silicon.png';
+siliconImage.src = 'icons/silicon.png';
 
 export default {
   typeID: BaseModel.typeID,

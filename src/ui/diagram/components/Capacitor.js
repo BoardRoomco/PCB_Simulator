@@ -18,7 +18,7 @@ const NUM_OF_CONNECTORS = 2;
 const WIRE_COLOR = '#90EE90';
 
 const capacitorImage = new Image();
-capacitorImage.src = '/icons/capacitor.png';
+capacitorImage.src = 'icons/capacitor.png';
 
 export default {
   typeID: BaseCapacitorModel.typeID,

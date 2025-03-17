@@ -19,7 +19,7 @@ const NUM_OF_CONNECTORS = 2;
 const WIRE_COLOR = '#90EE90';
 
 const inductorImage = new Image();
-inductorImage.src = '/icons/inductor.png';
+inductorImage.src = 'icons/inductor.png';
 
 export default {
   typeID: BaseInductorModel.typeID,

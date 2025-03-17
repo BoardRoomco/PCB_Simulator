@@ -17,7 +17,7 @@ const NUM_OF_CONNECTORS = 3;
 const WIRE_COLOR = '#90EE90';
 
 const transistorImage = new Image();
-transistorImage.src = '/icons/mosfet.png';
+transistorImage.src = 'icons/mosfet.png';
 
 export default {
   typeID: BaseTransistorModel.typeID,
