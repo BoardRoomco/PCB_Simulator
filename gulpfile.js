@@ -22,8 +22,16 @@ function handleError(err) {
 
 function templates(outDir) {
   return function() {
-    return gulp.src('public/*.jade')
-      .pipe(jade())
+    // Process Jade files
+    gulp.src('public/*.jade')
+      .pipe(jade({
+        pretty: true
+      }))
+      .pipe(gulp.dest(outDir))
+      .pipe(connect.reload());
+    
+    // Copy HTML files directly
+    return gulp.src('public/*.html')
       .pipe(gulp.dest(outDir))
       .pipe(connect.reload());
   };
@@ -39,15 +47,22 @@ function styles(outDir) {
 
 function vendor(outDir) {
   return function() {
-    return gulp.src('public/vendor/**')
+    return gulp.src('public/vendor/**/*')
       .pipe(gulp.dest(outDir + '/vendor'));
   };
 }
 
 function icons(outDir) {
   return function() {
-    return gulp.src('public/icons/**')
+    return gulp.src('public/icons/**/*')
       .pipe(gulp.dest(outDir + '/icons'));
+  };
+}
+
+function staticFiles(outDir) {
+  return function() {
+    return gulp.src(['public/*.json', 'public/*.md'])
+      .pipe(gulp.dest(outDir));
   };
 }
 
@@ -55,6 +70,7 @@ gulp.task('templates', templates(devBuildDir));
 gulp.task('styles', styles(devBuildDir));
 gulp.task('vendor', vendor(devBuildDir));
 gulp.task('icons', icons(devBuildDir));
+gulp.task('static', staticFiles(devBuildDir));
 
 function compile(opts) {
   var bundler = watchify(
@@ -114,9 +130,11 @@ gulp.task('connect', function(done) {
 
 gulp.task('watch', function(done) {
   gulp.watch('public/*.jade', gulp.series('templates'));
+  gulp.watch('public/*.html', gulp.series('templates'));
   gulp.watch('public/*.css', gulp.series('styles'));
-  gulp.watch('public/vendor/**', gulp.series('vendor'));
-  gulp.watch('public/icons/**', gulp.series('icons'));
+  gulp.watch('public/vendor/**/*', gulp.series('vendor'));
+  gulp.watch('public/icons/**/*', gulp.series('icons'));
+  gulp.watch(['public/*.json', 'public/*.md'], gulp.series('static'));
   
   compile({watch: true});
   done();
@@ -154,8 +172,13 @@ gulp.task('build', gulp.series(function(done) {
     styles(buildDir)(),
     vendor(buildDir)(),
     icons(buildDir)(),
+    staticFiles(buildDir)(),
     buildJs()
   ]).then(() => {
+    // Copy index.html directly if it exists
+    if (fs.existsSync('public/index.html')) {
+      fs.copyFileSync('public/index.html', path.join(buildDir, 'index.html'));
+    }
     done();
   }).catch((err) => {
     console.error('Build error:', err);
@@ -164,7 +187,7 @@ gulp.task('build', gulp.series(function(done) {
 }));
 
 gulp.task('default', gulp.series(
-  gulp.parallel('templates', 'styles', 'vendor', 'icons'),
+  gulp.parallel('templates', 'styles', 'vendor', 'icons', 'static'),
   'connect',
   'watch'
 ));
