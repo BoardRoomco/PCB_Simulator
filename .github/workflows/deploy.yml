@@ -3,7 +3,7 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches:
-      - main  # Set this to your default branch
+      - main
 
 permissions:
   contents: write
@@ -29,8 +29,12 @@ jobs:
       - name: Build
         run: gulp build
 
+      - name: List build directory
+        run: ls -la build/
+
       - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4
         with:
           folder: build
-          branch: gh-pages 
+          branch: gh-pages
+          clean: true # Automatically remove deleted files from the deployment 

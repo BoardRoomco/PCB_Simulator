@@ -61,7 +61,12 @@ function icons(outDir) {
 
 function staticFiles(outDir) {
   return function() {
-    return gulp.src(['public/*.json', 'public/*.md'])
+    // Copy JSON and MD files
+    gulp.src(['public/*.json', 'public/*.md'])
+      .pipe(gulp.dest(outDir));
+    
+    // Copy .nojekyll file
+    return gulp.src('.nojekyll')
       .pipe(gulp.dest(outDir));
   };
 }
@@ -165,6 +170,9 @@ gulp.task('build', gulp.series(function(done) {
   if (!fs.existsSync(buildDir)) {
     fs.mkdirSync(buildDir);
   }
+  
+  // Create .nojekyll file in build directory
+  fs.writeFileSync(path.join(buildDir, '.nojekyll'), '');
   
   // Run all build tasks in parallel
   Promise.all([
