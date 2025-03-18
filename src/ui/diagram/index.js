@@ -19,7 +19,8 @@ import {
   saveCircuitAsChallenge,
   loadCircuit,
   toggleCompetitionMode,
-  submitAnswer
+  submitAnswer,
+  saveAsPDF
 } from '../../state/actions';
 import resize from '../Resize';
 import {relMouseCoords} from '../utils/DrawingUtils';
@@ -118,6 +119,11 @@ class CircuitDiagram extends React.Component {
       }
     } else if (event.key.toLowerCase() === 'c') {
       store.dispatch(toggleCompetitionMode());
+    } else if (event.key.toLowerCase() === 'u') {
+      console.log('Load circuit via pdf');
+    } else if (event.key.toLowerCase() === 'p') {
+      // Print the circuit to PDF
+      store.dispatch(saveAsPDF());
     }
   }
 

@@ -5,6 +5,7 @@ import uuid from 'node-uuid';
 import MODES from '../../Modes';
 import { TIMESTEP } from '../../ui/diagram/loop';
 import Components from '../../ui/diagram/components';
+import createRender from '../../ui/diagram/render';
 
 // Action types
 export const CHANGE_MODE = 'CHANGE_MODE';
@@ -479,6 +480,193 @@ export function loadCircuit(circuitId, offset = { x: 0, y: 0 }) {
       })
       .catch(error => {
         console.error('Error loading circuit:', error);
+      });
+  };
+}
+
+export const SAVE_AS_PDF = 'SAVE_AS_PDF';
+export function saveAsPDF() {
+  return function(dispatch, getState) {
+    // Function to load jsPDF script
+    const loadJSPDF = () => {
+      return new Promise((resolve, reject) => {
+        if (window.jspdf) {
+          resolve(window.jspdf);
+          return;
+        }
+
+        const script = document.createElement('script');
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+        script.onload = () => resolve(window.jspdf);
+        script.onerror = () => reject(new Error('Failed to load jsPDF'));
+        document.head.appendChild(script);
+      });
+    };
+
+    // Load jsPDF and then generate PDF
+    loadJSPDF()
+      .then(() => {
+        const state = getState();
+        
+        // Create a temporary canvas for PDF rendering
+        const tempCanvas = document.createElement('canvas');
+        const ctx = tempCanvas.getContext('2d');
+        const sidebarWidth = 240;
+        const width = window.innerWidth - sidebarWidth;
+        const height = window.innerHeight;
+        tempCanvas.width = width;
+        tempCanvas.height = height;
+        
+        // Set PDF page size to match canvas size
+        const pdf = new window.jspdf.jsPDF({
+          orientation: 'landscape',
+          unit: 'px',
+          format: [width, height]
+        });
+        
+        // Add circuit model title and simulation parameters
+        pdf.setFontSize(32);
+        pdf.text('Circuit Model', 25, 45);
+        pdf.setFontSize(16);
+        pdf.text('Simulation Parameters', 25, 72);
+        pdf.setFontSize(12);
+
+        yPos = 88;
+        const params = {
+          'Timestep': `${state.circuit.timestep} seconds`,
+          'Simulation Time per Second': `${state.circuit.simTimePerSec} seconds`,
+          'Number of Nodes': state.circuit.circuitGraph.numOfNodes,
+          'Number of Voltage Sources': state.circuit.circuitGraph.numOfVSources
+        };
+
+        Object.entries(params).forEach(([key, value]) => {
+          pdf.text(`${key}: ${value}`, 25, yPos);
+          yPos += 15;
+        });
+        
+        // Create a mock store object with getState
+        const mockStore = {
+          getState: () => state
+        };
+        
+        // Create render function using the same logic as the main app
+        const render = createRender(mockStore, ctx, {
+          COLORS: {
+            base: '#000000',
+            highlight: '#000000',
+            theme: '#000000'
+          }
+        });
+        
+        // Render the circuit
+        render();
+
+        // Convert model to png image then add to PDF
+        const imgData = tempCanvas.toDataURL('image/png');
+        pdf.addImage(imgData, 'PNG', 0, 0, width, height);
+        
+        // Add a new page for circuit information
+        pdf.addPage('letter', 'portrait');
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfHeight = pdf.internal.pageSize.getHeight();
+        
+        // Add component information
+        pdf.setFontSize(16);
+        pdf.text('Circuit Components', 20, 20);
+        pdf.setFontSize(12);
+
+        let yPos = 35;
+        Object.entries(state.views).forEach(([id, component]) => {
+          // Check if we need a new page 
+          if (yPos > pdfHeight - 60) { 
+            pdf.addPage('letter', 'portrait');
+            yPos = 20;
+          }
+
+          // Component type and ID
+          pdf.setFontSize(12);
+          pdf.text(`${component.typeID} (${id})`, 20, yPos);
+          
+          // Component values
+          pdf.setFontSize(10);
+          if (component.editables) {
+            Object.entries(component.editables).forEach(([key, value]) => {
+              // Check if we need a new page
+              if (yPos > pdfHeight - 60) {
+                pdf.addPage('letter', 'portrait');
+                yPos = 20;
+              }
+              yPos += 12;
+              pdf.text(`${key}: ${value.value}`, 30, yPos);
+            });
+          }
+          
+          // Component connections
+          if (component.connectors) {
+            // Check if we need a new page
+            if (yPos > pdfHeight - 60) {
+              pdf.addPage('letter', 'portrait');
+              yPos = 20;
+            }
+            yPos += 12;  // Increased from 10 to 12 for more line spacing
+            pdf.text('Connections:', 30, yPos);
+            component.connectors.forEach((connector, index) => {
+              // Check if we need a new page
+              if (yPos > pdfHeight - 60) {
+                pdf.addPage('letter', 'portrait');
+                yPos = 20;
+              }
+              yPos += 12;
+              pdf.text(`Pin ${index + 1}: (${connector.x}, ${connector.y})`, 40, yPos);
+            });
+          }
+          
+          yPos += 20;
+        });
+
+        // Add a new page with circuit data for loading
+        pdf.addPage('letter', 'portrait');
+        pdf.setFontSize(16);
+        pdf.text('Circuit Data (for loading)', 20, 20);
+        pdf.setFontSize(8);
+
+        const circuitData = JSON.stringify({
+          views: state.views,
+          circuit: state.circuit,
+          theme: state.theme
+        });
+
+        const chunkSize = 150;
+        const chunks = [];
+        for (let i = 0; i < circuitData.length; i += chunkSize) {
+          chunks.push(circuitData.slice(i, i + chunkSize));
+        }
+
+        yPos = 35; 
+        chunks.forEach(chunk => {
+          // Check if we need a new page
+          if (yPos > pdfHeight - 40) {
+            pdf.addPage('letter', 'portrait');
+            yPos = 20;
+          }
+          pdf.text(chunk, 20, yPos);
+          yPos += 10;
+        });
+        
+        // Save the PDF
+        pdf.save('circuit.pdf');
+        console.log('Circuit saved as PDF successfully!');
+        
+        return {
+          type: SAVE_AS_PDF
+        };
+      })
+      .catch(error => {
+        console.error('Error generating PDF:', error);
+        return {
+          type: SAVE_AS_PDF,
+          error: error.message
+        };
       });
   };
 }
