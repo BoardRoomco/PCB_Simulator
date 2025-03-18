@@ -48,14 +48,11 @@ class App extends React.Component {
         position: 'fixed',
         top: 0,
         left: 0,
-        backgroundColor: '#4a3728',  // Wood base color
-        backgroundImage: `repeating-linear-gradient(
-          45deg,
-          #4a3728,
-          #4a3728 10px,
-          #5c4434 10px,
-          #5c4434 20px
-        )`,  // Wood grain pattern
+        backgroundColor: '#333',  // Fallback color
+        backgroundImage: 'url("icons/ideal_background.jpg")',
+        backgroundSize: '100% 100%',  // Stretch to exactly fit width and height
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat'
       }}>
         <Style
           rules={styles.global}
