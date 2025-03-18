@@ -43,12 +43,19 @@ class App extends React.Component {
       <div style={{
         display: 'flex',
         flexDirection: 'row',
-        backgroundColor: '#333333',  // Match canvas background color
         width: '100%',
         height: '100vh',
         position: 'fixed',
         top: 0,
-        left: 0
+        left: 0,
+        backgroundColor: '#4a3728',  // Wood base color
+        backgroundImage: `repeating-linear-gradient(
+          45deg,
+          #4a3728,
+          #4a3728 10px,
+          #5c4434 10px,
+          #5c4434 20px
+        )`,  // Wood grain pattern
       }}>
         <Style
           rules={styles.global}

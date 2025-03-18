@@ -302,7 +302,6 @@ class CircuitDiagram extends React.Component {
             margin: 0,
             border: 0,
             display: 'block',
-            backgroundColor: this.context.theme.COLORS.canvasBackground,
             cursor: isAddingText ? 'text' : 'default'
           }}
           tabIndex={0}
