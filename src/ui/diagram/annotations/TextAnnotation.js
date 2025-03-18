@@ -17,6 +17,20 @@ export class TextAnnotation {
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     
+    // Calculate text dimensions
+    const textWidth = ctx.measureText(this.text).width;
+    const textHeight = this.fontSize;
+    const padding = 10;  // Padding around text
+    
+    // Draw background
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';  // Translucent black
+    ctx.fillRect(
+      this.position.x - (textWidth/2 + padding),
+      this.position.y - (textHeight/2 + padding/2),
+      textWidth + padding * 2,
+      textHeight + padding
+    );
+    
     // Draw text
     ctx.fillStyle = '#FFFFFF'; // White text
     ctx.fillText(this.text, this.position.x, this.position.y);

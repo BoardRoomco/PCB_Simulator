@@ -535,28 +535,15 @@ export const toggleCompetitionMode = () => {
   return function(dispatch) {
     // First toggle the competition mode
     dispatch({ type: TOGGLE_COMPETITION_MODE });
-
-    // Fetch the active assessment
-    fetch('http://localhost:3001/get-active-assessment')
-      .then(response => response.json())
-      .then(data => {
-        if (data.success && data.circuitId) {
-          // Extract just the ID string from the ObjectId
-          const circuitId = typeof data.circuitId === 'object' ? data.circuitId.$oid || data.circuitId.id : data.circuitId;
-          console.log('Found active assessment:', circuitId);
-          // Load the circuit automatically
-          dispatch(loadCircuit(circuitId));
-          // Start simulation automatically in assessment mode
-          setTimeout(() => {
-            dispatch(startSimulation());
-          }, 1000); // Wait 1 second for circuit to load
-        } else {
-          console.error('No active assessment found');
-        }
-      })
-      .catch(error => {
-        console.error('Error fetching active assessment:', error);
-      });
+    
+    // Load our specific circuit
+    const circuitId = '67d8e65eb4d93e32213429ce';
+    dispatch(loadCircuit(circuitId));
+    
+    // Start simulation automatically in assessment mode
+    setTimeout(() => {
+      dispatch(startSimulation());
+    }, 1000); // Wait 1 second for circuit to load
   };
 };
 
