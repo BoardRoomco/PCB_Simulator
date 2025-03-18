@@ -537,7 +537,7 @@ export const toggleCompetitionMode = () => {
     dispatch({ type: TOGGLE_COMPETITION_MODE });
     
     // Load our specific circuit
-    const circuitId = '67d8e65eb4d93e32213429ce';
+    const circuitId = '67d97db0b4d93e32213429cf';
     dispatch(loadCircuit(circuitId));
     
     // Start simulation automatically in assessment mode
