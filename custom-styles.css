@@ -1,0 +1,20 @@
+/* Wood texture background */
+body {
+    background-image: url('/textures/wood-texture.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    min-height: 100vh;
+    width: 100%;
+}
+
+/* Semi-transparent overlay for better contrast */
+#editor-container, #landing-page {
+    background: rgba(26, 26, 26, 0.5) !important;
+}
+
+/* Adjust canvas background for better visibility */
+.circuit-canvas {
+    background: rgba(51, 51, 51, 0.7) !important;
+} 
