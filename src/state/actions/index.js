@@ -531,7 +531,7 @@ export function saveAsPDF() {
         pdf.text('Simulation Parameters', 25, 72);
         pdf.setFontSize(12);
 
-        yPos = 88;
+        let yPos = 88;
         const params = {
           'Timestep': `${state.circuit.timestep} seconds`,
           'Simulation Time per Second': `${state.circuit.simTimePerSec} seconds`,
@@ -575,7 +575,7 @@ export function saveAsPDF() {
         pdf.text('Circuit Components', 20, 20);
         pdf.setFontSize(12);
 
-        let yPos = 35;
+        yPos = 35;
         Object.entries(state.views).forEach(([id, component]) => {
           // Check if we need a new page 
           if (yPos > pdfHeight - 60) { 
@@ -628,29 +628,39 @@ export function saveAsPDF() {
         pdf.addPage('letter', 'portrait');
         pdf.setFontSize(16);
         pdf.text('Circuit Data (for loading)', 20, 20);
-        pdf.setFontSize(8);
-
+        
+        // Convert circuit data to base64
         const circuitData = JSON.stringify({
           views: state.views,
           circuit: state.circuit,
           theme: state.theme
         });
-
-        const chunkSize = 150;
+        const base64Data = btoa(circuitData);
+        
+        // Set font size for base64 data first
+        pdf.setFontSize(2);
+        
+        // Split base64 string into chunks that fit the page width
+        const pageWidth = pdf.internal.pageSize.getWidth();
+        const margin = 20;
+        const maxWidth = pageWidth - (margin * 2);
+        const charsPerLine = Math.floor(maxWidth / (pdf.getFontSize() * 0.6)); // Approximate chars per line
         const chunks = [];
-        for (let i = 0; i < circuitData.length; i += chunkSize) {
-          chunks.push(circuitData.slice(i, i + chunkSize));
+        
+        for (let i = 0; i < base64Data.length; i += charsPerLine) {
+          chunks.push(base64Data.slice(i, i + charsPerLine));
         }
-
-        yPos = 35; 
+        
+        // Add each chunk on a new line
+        let base64YPos = 35;
         chunks.forEach(chunk => {
           // Check if we need a new page
-          if (yPos > pdfHeight - 40) {
+          if (base64YPos > pdf.internal.pageSize.getHeight() - 20) {
             pdf.addPage('letter', 'portrait');
-            yPos = 20;
+            base64YPos = 20;
           }
-          pdf.text(chunk, 20, yPos);
-          yPos += 10;
+          pdf.text(chunk, margin, base64YPos);
+          base64YPos += 2; // Line height
         });
         
         // Save the PDF
@@ -670,6 +680,76 @@ export function saveAsPDF() {
       });
   };
 }
+
+export function loadFromPDF(file, offset = { x: 0, y: 0 }) {
+  return function(dispatch) {
+    console.log('Starting PDF load process...');
+
+    const reader = new FileReader();
+    reader.onload = function() {
+      console.log('File read successfully');
+      const text = this.result;
+
+      console.log('Text:', text);
+
+      try {
+        // Find the Circuit Data section
+        const startMarker = 'for loading';
+        const endMarker = 'endstream';
+        
+        const startIndex = text.indexOf(startMarker);
+        if (startIndex === -1) {
+          throw new Error('No circuit data section found in PDF');
+        }
+
+        const endIndex = text.indexOf(endMarker, startIndex);
+        if (endIndex === -1) {
+          throw new Error('No endstream marker found after circuit data');
+        }
+
+        // Extract the text between markers
+        const circuitDataText = text.substring(startIndex + startMarker.length + 5, endIndex).trim();
+        console.log('Extracted circuit data text:', circuitDataText);
+
+        // Extract content within parentheses using regex
+        const parenthesesContent = circuitDataText.match(/\((.*?)\)/g);
+        
+        if (!parenthesesContent) {
+          throw new Error('No content found within parentheses');
+        }
+
+        // Remove the parentheses from each match
+        const extractedStrings = parenthesesContent.map(str => 
+          str.substring(1, str.length - 1)
+        );
+
+        // Combine all extracted strings into a single string
+        const combinedString = extractedStrings.join('');
+
+        // Convert base64 to JSON
+        const jsonData = JSON.parse(atob(combinedString));
+        console.log('JSON data:', jsonData);
+
+        // Dispatch the load circuit action
+        dispatch({
+          type: LOAD_CIRCUIT,
+          circuit: jsonData,
+          shouldMerge: true,
+          offset: offset
+        });
+
+        dispatch(loopBegin());
+        dispatch(loopUpdate(TIMESTEP));
+
+      } catch (error) {
+        console.error('Error loading circuit from PDF:', error);
+      }
+    };
+
+    reader.readAsText(file);
+  };
+}
+
 
 export const PRINT_CIRCUIT = 'PRINT_CIRCUIT';
 export function printCircuit() {

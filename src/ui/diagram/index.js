@@ -20,7 +20,8 @@ import {
   loadCircuit,
   toggleCompetitionMode,
   submitAnswer,
-  saveAsPDF
+  saveAsPDF,
+  loadFromPDF
 } from '../../state/actions';
 import resize from '../Resize';
 import {relMouseCoords} from '../utils/DrawingUtils';
@@ -120,7 +121,21 @@ class CircuitDiagram extends React.Component {
     } else if (event.key.toLowerCase() === 'c') {
       store.dispatch(toggleCompetitionMode());
     } else if (event.key.toLowerCase() === 'u') {
-      console.log('Load circuit via pdf');
+      // Create a file input element
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = '.pdf';
+      input.onchange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+          const offsetX = parseInt(prompt('Enter X offset (or leave empty for 0):', '0')) || 0;
+          const offsetY = parseInt(prompt('Enter Y offset (or leave empty for 0):', '0')) || 0;
+          store.dispatch(loadFromPDF(file, { x: offsetX, y: offsetY }));
+        }
+        // Remove the input element after file selection (whether successful or not)
+        input.remove();
+      };
+      input.click();
     } else if (event.key.toLowerCase() === 'p') {
       // Print the circuit to PDF
       store.dispatch(saveAsPDF());
